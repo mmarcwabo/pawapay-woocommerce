@@ -1,0 +1,47 @@
+#pawapay-fields {
+    padding: 10px 0;
+}
+
+.pawapay-mno-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.pawapay-mno-card {
+    cursor: pointer;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    text-align: center;
+    background: #fff;
+    min-width: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: border-color .15s, box-shadow .15s;
+    user-select: none;
+}
+
+.pawapay-mno-card:hover {
+    border-color: #aaa;
+}
+
+.pawapay-mno-card.pawapay-selected {
+    border-color: #6C3BAA;
+    box-shadow: 0 0 0 1px #6C3BAA;
+}
+
+.pawapay-mno-card img {
+    height: 44px;
+    width: auto;
+    object-fit: contain;
+}
+
+.pawapay-mno-card span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+}
