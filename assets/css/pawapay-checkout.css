@@ -2,11 +2,29 @@
     padding: 10px 0;
 }
 
+#pawapay_country,
+#pawapay_currency {
+    width: 100%;
+}
+
+.pawapay-waiting {
+    margin-bottom: 1.5em;
+}
+
 .pawapay-mno-grid {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
     margin-top: 8px;
+}
+
+.pawapay-mno-row {
+    margin: 0 0 1em;
+}
+
+#pawapay_currency,
+#pawapay-currency-row .input-text {
+    width: 100%;
 }
 
 .pawapay-mno-card {
@@ -23,6 +41,11 @@
     gap: 6px;
     transition: border-color .15s, box-shadow .15s;
     user-select: none;
+    font: inherit;
+    color: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    line-height: 1.2;
 }
 
 .pawapay-mno-card:hover {
@@ -38,6 +61,7 @@
     height: 44px;
     width: auto;
     object-fit: contain;
+    pointer-events: none;
 }
 
 .pawapay-mno-card span {
