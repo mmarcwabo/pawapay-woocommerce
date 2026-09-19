@@ -7,13 +7,42 @@ defined( 'ABSPATH' ) || exit;
 class WC_PawaPay_Deposit {
 
     public static function find_order( string $deposit_id ): ?WC_Order {
+        if ( class_exists( 'WC_PawaPay_Attempt_Repository' ) ) {
+            $attempt = WC_PawaPay_Attempt_Repository::instance()->find_by_deposit_id( $deposit_id );
+            if ( $attempt ) {
+                $order = wc_get_order( $attempt->order_id() );
+                if ( $order instanceof WC_Order ) {
+                    return $order;
+                }
+            }
+        }
+
         $orders = wc_get_orders( [
             'meta_key'   => '_pawapay_deposit_id',
             'meta_value' => $deposit_id,
             'limit'      => 1,
         ] );
 
-        return $orders[0] ?? null;
+        $order = $orders[0] ?? null;
+        if ( $order instanceof WC_Order && class_exists( 'WC_PawaPay_Attempt_Repository' ) ) {
+            self::backfill_attempt( $order );
+        }
+
+        return $order;
+    }
+
+    public static function backfill_attempt( WC_Order $order ): void {
+        WC_PawaPay_Attempt_Repository::instance()->backfill_from_meta(
+            (int) $order->get_id(),
+            [
+                '_pawapay_deposit_id' => $order->get_meta( '_pawapay_deposit_id' ),
+                '_pawapay_phone'      => $order->get_meta( '_pawapay_phone' ),
+                '_pawapay_mno'        => $order->get_meta( '_pawapay_mno' ),
+                '_pawapay_currency'   => $order->get_meta( '_pawapay_currency' ),
+                '_pawapay_amount'     => $order->get_meta( '_pawapay_amount' ),
+            ],
+            $order->is_paid()
+        );
     }
 
     public static function extract_status( array $payload ): string {
@@ -62,12 +91,13 @@ class WC_PawaPay_Deposit {
         $status = self::extract_status( $data );
         $logger = wc_get_logger();
 
+        $deposit_id = sanitize_text_field( $data['depositId'] ?? $order->get_meta( '_pawapay_deposit_id' ) );
+        self::sync_attempt( $deposit_id, $data, $status );
+
         $current = $order->get_status();
         if ( in_array( $current, [ 'completed', 'processing', 'failed', 'cancelled', 'refunded' ], true ) ) {
             return $current;
         }
-
-        $deposit_id = sanitize_text_field( $data['depositId'] ?? $order->get_meta( '_pawapay_deposit_id' ) );
 
         switch ( $status ) {
             case 'COMPLETED':
@@ -130,6 +160,30 @@ class WC_PawaPay_Deposit {
         }
 
         return $order->get_status();
+    }
+
+    /**
+     * Keep the attempt row in sync. Does not decide Woo paid state.
+     *
+     * @param array<string, mixed> $data
+     */
+    private static function sync_attempt( string $deposit_id, array $data, string $pawapay_status ): void {
+        if ( $deposit_id === '' || ! class_exists( 'WC_PawaPay_Attempt_Repository' ) ) {
+            return;
+        }
+
+        $provider_tx = $data['providerTransactionId']
+            ?? ( $data['correspondentIds']['providerTransactionId'] ?? ( $data['financialTransactionId'] ?? '' ) );
+
+        WC_PawaPay_Attempt_Repository::instance()->mark_status(
+            $deposit_id,
+            WC_PawaPay_Attempt::from_pawapay_status( $pawapay_status ),
+            [
+                'provider_transaction_id' => sanitize_text_field( (string) $provider_tx ),
+                'failure_code'            => sanitize_text_field( (string) ( $data['rejectionReason']['rejectionCode'] ?? ( $data['failureReason']['failureCode'] ?? '' ) ) ),
+                'failure_message'         => sanitize_text_field( (string) ( $data['rejectionReason']['rejectionMessage'] ?? ( $data['failureReason']['failureMessage'] ?? '' ) ) ),
+            ]
+        );
     }
 
     public static function sync_from_api( WC_Order $order, WC_PawaPay_API $api ): string {

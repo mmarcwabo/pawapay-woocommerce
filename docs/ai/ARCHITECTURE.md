@@ -1,13 +1,13 @@
 # Architecture
 
 ## Architecture status
-Observed 2026-09-19 on plugin **1.2.1**. Target 2.x is specified in `docs/architecture/` and is **not** implemented yet.
+Observed 2026-09-19 on plugin **1.3.0**. Attempts table is live; trusted completion (Phase 4) is **not** implemented yet.
 
 ## Current architecture
-Classic WooCommerce payment gateway. `WC_PawaPay_Gateway` owns checkout fields, initiation, settings, and admin actions. Shared `WC_PawaPay_Deposit::apply()` writes Woo status from webhook JSON or from `GET /deposits/{id}`. No attempts table, no Action Scheduler, no signed webhooks.
+Classic WooCommerce payment gateway. `WC_PawaPay_Gateway` owns checkout fields, initiation, settings, and admin actions. Shared `WC_PawaPay_Deposit::apply()` writes Woo status from webhook JSON or from `GET /deposits/{id}`. Attempts table dual-writes deposits. No Action Scheduler, no signed webhooks.
 
 ## High-level component map
-`wc-pawapay-gateway.php` boots providers, currency, API, deposit, gateway, webhook, thankyou, i18n, PUC.
+`wc-pawapay-gateway.php` boots storage/migrator, providers, currency, API, deposit, gateway, webhook, thankyou, i18n, PUC.
 
 Checkout JS: operator cards + phone compose. Thank-you JS: fixed-interval poll.
 
@@ -19,11 +19,12 @@ Checkout JS: operator cards + phone compose. Thank-you JS: fixed-interval poll.
 | Catalog | `class-wc-pawapay-providers.php` (static) |
 | FX | `class-wc-pawapay-currency.php` |
 | Sync | `class-wc-pawapay-deposit.php` |
+| Attempts | `class-wc-pawapay-attempt.php`, repository, migrator |
 | Ingress | `class-wc-pawapay-webhook.php` (rewrite + REST) |
 | UX | `class-wc-pawapay-thankyou.php`, `assets/*` |
 
 ## Data architecture
-Order meta only (`_pawapay_*`). Last deposit wins. See `docs/architecture/payment-attempts.md`.
+`{prefix}pawapay_transactions` plus 1.x `_pawapay_*` meta. Last deposit still wins on meta. See `docs/architecture/payment-attempts.md`.
 
 ## Authentication
 Merchant Bearer token to PawaPay. Webhook has no caller auth.
@@ -44,4 +45,4 @@ WordPress plugin; GitHub PUC on `main`. Maungano: `/var/www/maungano.com/wp-cont
 `wc_get_logger()` source `wc-pawapay`. Debug can log redacted payloads.
 
 ## Known architectural compromises
-God gateway; unsigned webhook applies status; FAILED fails the Woo order; no attempt history.
+God gateway; unsigned webhook applies status; FAILED fails the Woo order. Attempt history exists from 1.3.0.

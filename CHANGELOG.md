@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0
+
+- Store every PawaPay deposit as a payment attempt (`{prefix}pawapay_transactions`). Retries no longer erase earlier deposit ids.
+- Keep writing 1.x order meta (`_pawapay_deposit_id` and related keys) so existing lookups and upgrades keep working.
+- Webhook and poll can resolve an order from a historical deposit id, then optionally backfill one attempt from 1.x meta.
+- The attempts table stores a hashed and masked MSISDN only.
+- WooCommerce completion rules are unchanged in this release (unsigned webhook and `FAILED` → order `failed` remain Phase 4).
+
 ## 1.2.1
 
 - Completion notes use `requestedAmount` / `depositedAmount` and record sandbox amount discrepancies.

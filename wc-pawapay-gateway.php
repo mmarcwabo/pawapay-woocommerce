@@ -3,7 +3,7 @@
  * Plugin Name: PawaPay Mobile Money Gateway for WooCommerce
  * Plugin URI:  https://github.com/mmarcwabo/pawapay-woocommerce
  * Description: WooCommerce gateway for PawaPay mobile money deposits. Configure API keys, deposit callbacks, countries, and operators.
- * Version:     1.2.1
+ * Version:     1.3.0
  * Author:      Maungano
  * Author URI:  https://github.com/mmarcwabo/pawapay-woocommerce
  * License:     GPL v2 or later
@@ -17,13 +17,21 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WC_PAWAPAY_VERSION', '1.2.1' );
+define( 'WC_PAWAPAY_VERSION', '1.3.0' );
 define( 'WC_PAWAPAY_PLUGIN_FILE', __FILE__ );
 define( 'WC_PAWAPAY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WC_PAWAPAY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'WC_PAWAPAY_GITHUB_REPO', 'https://github.com/mmarcwabo/pawapay-woocommerce/' );
 
+add_action( 'plugins_loaded', 'wc_pawapay_load_storage', 10 );
 add_action( 'plugins_loaded', 'wc_pawapay_init', 11 );
+
+function wc_pawapay_load_storage(): void {
+    require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-attempt.php';
+    require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-migrator.php';
+    require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-attempt-repository.php';
+    WC_PawaPay_Migrator::maybe_upgrade();
+}
 
 function wc_pawapay_init() {
     if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
@@ -32,6 +40,8 @@ function wc_pawapay_init() {
         } );
         return;
     }
+
+    wc_pawapay_load_storage();
 
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-providers.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-currency.php';
@@ -101,6 +111,7 @@ function wc_pawapay_init_update_checker(): void {
 add_action( 'plugins_loaded', 'wc_pawapay_init_update_checker', 0 );
 
 register_activation_hook( __FILE__, function () {
+    wc_pawapay_load_storage();
     add_rewrite_endpoint( 'pawapay-webhook', EP_ROOT );
     flush_rewrite_rules();
 } );

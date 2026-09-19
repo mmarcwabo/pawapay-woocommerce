@@ -1,8 +1,10 @@
 # Payment attempts
 
-## Current storage (1.2.1)
+## Current storage (1.3.0)
 
-No attempts table. Latest values overwrite order meta:
+New checkouts **dual-write**: a row in `{prefix}pawapay_transactions` plus the 1.x order meta below (latest deposit still overwrites meta, never the table).
+
+Old orders keep meta only until the first webhook/poll lookup backfills one row.
 
 | Meta | Meaning |
 |---|---|
@@ -15,7 +17,7 @@ No attempts table. Latest values overwrite order meta:
 | `_pawapay_deposited_amount` | From last COMPLETED payload |
 | `_pawapay_amount_discrepancy` | `yes` if requested ≠ deposited |
 
-`find_order()` looks up `_pawapay_deposit_id`. A second `process_payment` on the same order (if Woo ever re-enters it) **loses** the previous deposit id. Historical attempts exist only as order notes.
+`find_order()` looks up `{prefix}pawapay_transactions` by `deposit_id` first, then `_pawapay_deposit_id` meta, then backfills one row from that meta. A second `process_payment` still overwrites the **latest** meta pointer; earlier rows stay in the table. Thank-you poll / admin “Check PawaPay status” still read the latest meta id (Phase 3/6).
 
 ## Target model
 

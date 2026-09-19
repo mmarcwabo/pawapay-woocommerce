@@ -8,9 +8,9 @@
 - Status: Open. Target: Phase 4.
 
 ### TD-002 - One deposit id per order
-- Evidence: `process_payment` overwrites `_pawapay_deposit_id`.
-- Impact: Lost audit trail; retry can orphan a live wallet hold.
-- Status: Open. Target: Phase 1.
+- Evidence: `process_payment` still overwrites `_pawapay_deposit_id` (1.x pointer). History is now in `{prefix}pawapay_transactions`.
+- Impact: Latest-meta lookup can miss an older live deposit unless the attempts table is queried (webhook/poll `find_order` does that from 1.3.0).
+- Status: Mitigated. Remaining: initiate lock (Phase 3).
 
 ## P1 - High
 

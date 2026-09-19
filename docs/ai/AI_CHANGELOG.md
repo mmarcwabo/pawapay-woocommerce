@@ -39,6 +39,41 @@ No structural change / ADR reference
 **Follow-up**
 ...
 
+### 2026-09-19 - Payment attempts table (Phase 1)
+
+**Task**
+Add PaymentAttempt storage and dual-write without changing Woo completion rules.
+
+**Components affected**
+`wc-pawapay-gateway.php`, `includes/class-wc-pawapay-gateway.php`, `includes/class-wc-pawapay-deposit.php`, new attempt/migrator/repository classes, `tests/attempt-test.php`.
+
+**Behavior changed**
+Each `POST /deposits` inserts a new attempt row. Webhook/poll can find an order by a previous deposit id. 1.x meta still overwritten with the latest deposit.
+
+**Database**
+`{prefix}pawapay_transactions` schema v1. Option `wc_pawapay_schema_version`. No full MSISDN column.
+
+**Dependencies**
+None.
+
+**Tests**
+`php tests/attempt-test.php` plus existing script tests.
+
+**Security review**
+PASS WITH CONDITIONS. Schema version is written only after the table exists. Unsigned webhook and initiate lock remain Phase 3/4.
+
+**Verifier**
+PASS WITH CONDITIONS. Docs and schema-version retry updated after review.
+
+**Architecture**
+ADR-002.
+
+**Known limitations**
+Unsigned webhook and FAILED→order failed unchanged. No initiate lock yet.
+
+**Follow-up**
+Phase 2 API client seam, then Phase 3 initiate lock.
+
 ### 2026-09-19 - Payment architecture audit (Phase 0)
 
 **Task**

@@ -1,6 +1,6 @@
 # Payment flow
 
-Observed on plugin **1.2.1** (`d50762c`). Live Maungano deposits have completed with this path.
+Observed on plugin **1.3.0**. Live Maungano deposits completed on the 1.2.1 path; 1.3.0 adds attempt rows beside that path.
 
 ## Current flow (as implemented)
 
@@ -17,6 +17,7 @@ sequenceDiagram
     G->>G: amount = order.total (server)
     G->>G: currency = POST ∩ operator ∩ settings
     G->>G: overwrite _pawapay_deposit_id
+    G->>G: insert attempt row (INITIATING)
     G->>P: POST /deposits
     alt ACCEPTED
         G->>Woo: pending + empty cart
@@ -41,7 +42,7 @@ sequenceDiagram
 ## What is not yet the target
 
 - Redirect on `ACCEPTED` is the normal Woo thank-you page plus a banner, not a dedicated waiting screen.
-- One order stores **one** deposit id. A retry overwrites the previous attempt.
+- `_pawapay_deposit_id` is still a latest-deposit pointer. A retry overwrites that meta key; earlier deposits remain in the attempts table.
 - Webhook JSON `status` is applied without cryptographic verification and without re-fetching PawaPay (poll does re-fetch).
 - `FAILED` / `REJECTED` on the deposit sets the **Woo order** to `failed`, which blocks Pay again on that order.
 - No Action Scheduler reconciliation if the customer leaves and the webhook never arrives (admin “Check PawaPay status” is manual only).

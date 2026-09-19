@@ -3,7 +3,7 @@
 > Observed, not desired. Date: 2026-09-19.
 
 ## Baseline date
-2026-09-19. Released tag **v1.2.1**.
+2026-09-19. Working tree **1.3.0** (attempts table). Last GitHub release tag may still be **v1.2.1** until this milestone is tagged.
 
 ## Repository health
 Single `main`. Composer: PHP 8.0+, Plugin Update Checker 5.x. No CI in this repo.
@@ -12,13 +12,13 @@ Single `main`. Composer: PHP 8.0+, Plugin Update Checker 5.x. No CI in this repo
 No compile step. PHP lint + script tests run locally.
 
 ## Test status
-`tests/*-test.php` (no WordPress bootstrap): statement, providers, currency, deposit extract. No Woo/HPOS/webhook signature tests.
+`tests/*-test.php` (no WordPress bootstrap): statement, providers, currency, deposit extract, attempt repository (in-memory). No Woo/HPOS/webhook signature tests.
 
 ## Dependency status
 Only PUC in `vendor/`.
 
 ## Database status
-No custom tables. Woo order meta + notes.
+`{prefix}pawapay_transactions` (schema v1) plus Woo order meta + notes.
 
 ## Security-sensitive surfaces
 Public webhook + REST `/wp-json/pawapay/v1/deposits`. Token in options. Poll AJAX. Order notes with full MSISDN.

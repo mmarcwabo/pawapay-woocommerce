@@ -34,6 +34,8 @@ A token is only needed if you point the checker at a private fork: `WC_PAWAPAY_G
 
 The thank-you URL is not “paid” until PawaPay returns `COMPLETED` (webhook or poll). **En cours** in WooCommerce means the deposit is paid and the order is being fulfilled.
 
+From 1.3.0 each `POST /deposits` is also stored as a **payment attempt** row. One WooCommerce order can have several attempts. The latest deposit is still copied onto `_pawapay_deposit_id` so 1.x tools keep working. The table is created on activate and on upgrade (`wc_pawapay_schema_version`).
+
 ## Currency picker
 
 Catalog prices stay in WooCommerce (and Aelia/WOOCS if those plugins are active). Checkout adds a **payment currency** select: the intersection of currencies enabled on the site, currencies enabled in this plugin, and currencies the selected operator can collect.
@@ -64,6 +66,10 @@ DRC examples:
 Bump `Version:` and `WC_PAWAPAY_VERSION`, push `main`, tag `vX.Y.Z`. WordPress compares the header on `main` via Plugin Update Checker.
 
 ## Changelog
+
+### 1.3.0
+
+- Payment attempts table; retries keep earlier deposit ids; 1.x order meta still written.
 
 ### 1.2.1
 
@@ -106,6 +112,7 @@ php tests/sanitize-statement-test.php
 php tests/providers-test.php
 php tests/deposit-status-test.php
 php tests/currency-test.php
+php tests/attempt-test.php
 ```
 
 Requires PHP 8.0+ and WooCommerce.

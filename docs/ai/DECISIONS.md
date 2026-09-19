@@ -21,3 +21,25 @@ Backfill optional; keep `_pawapay_deposit_id`.
 
 **Date**
 2026-09-19
+
+### ADR-002 - Dual-write payment attempts beside 1.x order meta
+
+**Status:** Accepted.
+
+**Context**
+1.2.1 stored only `_pawapay_deposit_id`. A retry lost the previous PawaPay deposit.
+
+**Decision**
+Add `{prefix}pawapay_transactions` (schema v1) and write a new row per deposit. Keep writing 1.x meta for one release so existing status lookup and old orders keep working. Do not store full MSISDN in the table. Do not change `payment_complete()` rules in the same step.
+
+**Alternatives considered**
+Replace meta immediately — rejected; live orders and admin “Check PawaPay status” still read the latest meta key.
+
+**Consequences**
+Plugin 1.3.0. `find_order()` prefers the attempts table, then meta, then backfills.
+
+**Migration / rollback impact**
+`dbDelta` on activate/`plugins_loaded`. Deactivate 1.3.0 and restore 1.2.1: table can remain unused; meta path still works.
+
+**Date**
+2026-09-19

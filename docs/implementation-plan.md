@@ -1,6 +1,6 @@
 # Implementation plan
 
-**Do not bump to 2.0.0 until Phase 1–4 ship together** (schema + initiation + verified completion). Earlier patches stay 1.2.x.
+**Do not bump to 2.0.0 until Phase 1–4 ship together** (schema + initiation + verified completion). Phase 1 shipped as **1.3.0**.
 
 Rollback: deactivate 2.x and restore 1.2.1; 1.x meta still present. New table can remain unused.
 
@@ -12,9 +12,11 @@ No runtime change.
 
 ## Phase 1 — PaymentAttempt + repository
 
+**Status:** done 2026-09-19 (plugin **1.3.0**). Completion rules still 1.2.1.
+
 **Goal:** Durable attempts; stop overwriting deposit history.
 
-**New:** `includes/Database/Migrator.php`, `includes/Payment/Attempt.php`, `includes/Payment/AttemptRepository.php`, activate/upgrade hook.
+**New:** `includes/class-wc-pawapay-migrator.php`, `includes/class-wc-pawapay-attempt.php`, `includes/class-wc-pawapay-attempt-repository.php`, activate/`plugins_loaded` upgrade.
 
 **Touch:** `wc-pawapay-gateway.php` (boot), keep writing 1.x meta for one release.
 

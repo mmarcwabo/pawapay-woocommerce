@@ -10,7 +10,7 @@ Customer pays an order from a mobile-money wallet. Shop fulfills after Woo marks
 Shopper, shop admin, PawaPay platform, MNO (Airtel/Orange/Vodacom/…).
 
 ## Core entities / concepts
-Woo **Order**. PawaPay **Deposit**. (Target) **PaymentAttempt** linking one deposit to one order.
+Woo **Order**. PawaPay **Deposit**. **PaymentAttempt** (1.3.0 table) linking one deposit to one order.
 
 ## Core workflows
 Checkout → deposit ACCEPTED → phone PIN → COMPLETED → Woo processing.
