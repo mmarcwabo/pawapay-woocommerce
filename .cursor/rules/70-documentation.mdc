@@ -1,0 +1,22 @@
+---
+description: AI project documentation maintenance.
+globs: "docs/ai/**,AGENTS.md"
+alwaysApply: false
+---
+
+# AI documentation rules
+
+Keep documentation factual and concise.
+
+Update when relevant:
+- `PROJECT.md`: stable project facts.
+- `DOMAIN.md`: business concepts and vocabulary.
+- `ARCHITECTURE.md`: current architecture.
+- `CURRENT_STATE.md`: baseline snapshot.
+- `CONSTRAINTS.md`: hard limitations.
+- `TECH_DEBT.md`: known debt and priorities.
+- `DECISIONS.md`: meaningful architectural decisions.
+- `AI_CHANGELOG.md`: significant AI-assisted changes.
+- `ROADMAP.md`: planned improvement sequence.
+
+Do not rewrite project history to make the current architecture look intentional.

@@ -1,0 +1,20 @@
+---
+description: Database and persistence rules. Apply to schema, migrations, queries, transactions, repositories and data jobs.
+globs: "**/*"
+alwaysApply: false
+---
+
+# Database rules
+
+Before a schema or data change:
+- inspect existing schema and data assumptions;
+- identify compatibility impact;
+- consider production data volume;
+- identify lock/downtime risk;
+- consider rollback or roll-forward strategy;
+- preserve integrity with appropriate constraints;
+- review indexes for changed query patterns;
+- use transactions when atomicity matters;
+- avoid destructive migrations without an explicit migration strategy.
+
+Never treat a schema change as isolated from existing data.

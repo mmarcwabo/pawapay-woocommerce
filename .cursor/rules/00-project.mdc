@@ -1,0 +1,18 @@
+---
+description: Core project operating rules for all AI-assisted work.
+alwaysApply: true
+---
+
+# Core operating rules
+
+- Read `AGENTS.md` and relevant `docs/ai/*` before material changes.
+- Understand existing behavior before changing it.
+- Prefer the smallest correct change.
+- Preserve public contracts unless explicitly authorized to break them.
+- Separate facts, assumptions, and recommendations.
+- Mark uncertain facts as `UNKNOWN`.
+- Avoid unrelated refactors in feature and bug-fix changes.
+- Do not introduce dependencies without explaining why they are necessary.
+- Do not remove dependencies until usage is verified.
+- Do not hardcode secrets, credentials, tokens or environment-specific values.
+- Keep changes reviewable and reversible.

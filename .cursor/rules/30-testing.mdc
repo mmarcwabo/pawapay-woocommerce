@@ -1,0 +1,19 @@
+---
+description: Testing standards for features, fixes and refactors.
+globs: "**/*"
+alwaysApply: false
+---
+
+# Testing rules
+
+For meaningful behavior changes:
+
+- Identify existing relevant tests before editing.
+- Add regression tests for fixed bugs when practical.
+- Add tests for new business behavior.
+- Cover important invalid inputs and permission boundaries.
+- Prefer behavior-focused tests over implementation-detail tests.
+- For refactors, establish characterization tests first when behavior is insufficiently protected.
+- Run the narrowest relevant test set first, then broader validation when practical.
+- Never weaken or delete a valid test only to make a change pass.
+- Report tests actually run, their results, and what was not run.

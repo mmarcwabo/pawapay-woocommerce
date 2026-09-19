@@ -1,0 +1,47 @@
+# Architecture
+
+## Architecture status
+Observed 2026-09-19 on plugin **1.2.1**. Target 2.x is specified in `docs/architecture/` and is **not** implemented yet.
+
+## Current architecture
+Classic WooCommerce payment gateway. `WC_PawaPay_Gateway` owns checkout fields, initiation, settings, and admin actions. Shared `WC_PawaPay_Deposit::apply()` writes Woo status from webhook JSON or from `GET /deposits/{id}`. No attempts table, no Action Scheduler, no signed webhooks.
+
+## High-level component map
+`wc-pawapay-gateway.php` boots providers, currency, API, deposit, gateway, webhook, thankyou, i18n, PUC.
+
+Checkout JS: operator cards + phone compose. Thank-you JS: fixed-interval poll.
+
+## Modules / bounded areas
+| Area | Class / files |
+|---|---|
+| Woo adapter | `class-wc-pawapay-gateway.php` (large) |
+| HTTP | `class-wc-pawapay-api.php` (v1 only) |
+| Catalog | `class-wc-pawapay-providers.php` (static) |
+| FX | `class-wc-pawapay-currency.php` |
+| Sync | `class-wc-pawapay-deposit.php` |
+| Ingress | `class-wc-pawapay-webhook.php` (rewrite + REST) |
+| UX | `class-wc-pawapay-thankyou.php`, `assets/*` |
+
+## Data architecture
+Order meta only (`_pawapay_*`). Last deposit wins. See `docs/architecture/payment-attempts.md`.
+
+## Authentication
+Merchant Bearer token to PawaPay. Webhook has no caller auth.
+
+## Authorization
+Poll: order key + nonce. Admin sync: Woo shop manager order action.
+
+## External integrations
+PawaPay Merchant API v1 (`/deposits`, `/deposits/{id}`, `/active-conf` unused at runtime). Optional Aelia/WOOCS filters.
+
+## Async jobs / queues / schedulers
+None. Poll + optional admin action only.
+
+## Runtime / deployment
+WordPress plugin; GitHub PUC on `main`. Maungano: `/var/www/maungano.com/wp-content/plugins/pawapay-woocommerce`.
+
+## Observability
+`wc_get_logger()` source `wc-pawapay`. Debug can log redacted payloads.
+
+## Known architectural compromises
+God gateway; unsigned webhook applies status; FAILED fails the Woo order; no attempt history.

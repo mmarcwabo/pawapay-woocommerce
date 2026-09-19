@@ -1,0 +1,16 @@
+---
+description: Git and change-management discipline.
+globs: "**/*"
+alwaysApply: false
+---
+
+# Git discipline
+
+- Keep changes scoped to the requested task.
+- Do not rewrite shared history.
+- Do not force-push unless explicitly requested.
+- Prefer small reviewable commits or logical change groups.
+- Before large changes, inspect `git status` and current branch.
+- Do not commit secrets, generated credentials or local environment files.
+- Call out unrelated local modifications before touching overlapping files.
+- For parallel editing, use isolated worktrees/environments when edits may collide.

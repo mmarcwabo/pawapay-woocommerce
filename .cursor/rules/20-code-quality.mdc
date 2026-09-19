@@ -1,0 +1,18 @@
+---
+description: Code quality and maintainability rules.
+globs: "**/*"
+alwaysApply: false
+---
+
+# Code quality
+
+- Follow repository naming, formatting and file-organization conventions.
+- Prefer readable code over clever code.
+- Keep functions and classes focused.
+- Remove duplication only when the abstraction is stable and beneficial.
+- Avoid speculative generalization.
+- Avoid broad formatting-only diffs mixed with functional changes.
+- Add comments for intent and non-obvious constraints, not for obvious syntax.
+- Preserve error context.
+- Do not swallow exceptions silently.
+- Avoid dead code and unused imports introduced by the change.

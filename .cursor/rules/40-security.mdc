@@ -1,0 +1,32 @@
+---
+description: Security rules for authentication, authorization, payments, uploads, public APIs, secrets, personal data, sessions, webhooks and infrastructure.
+globs: "**/*"
+alwaysApply: false
+---
+
+# Security rules
+
+Apply threat-aware review to security-sensitive changes.
+
+Check where relevant:
+- authentication;
+- authorization and IDOR;
+- privilege escalation;
+- injection;
+- XSS;
+- CSRF;
+- SSRF;
+- path traversal;
+- unsafe file uploads;
+- command execution;
+- secret leakage;
+- sensitive logging;
+- insecure defaults;
+- replay attacks;
+- webhook authenticity;
+- rate limiting;
+- data exposure;
+- mass assignment;
+- session and token lifecycle.
+
+Security controls must not be disabled simply to unblock development.

@@ -1,0 +1,22 @@
+---
+description: Architecture and design principles. Apply when changing structure, modules, dependencies, services, APIs, or domain boundaries.
+globs: "**/*"
+alwaysApply: false
+---
+
+# Architecture rules
+
+- Respect the architecture actually implemented unless a change is intentionally planned.
+- Use the simplest architecture appropriate for the system's complexity and expected lifetime.
+- Keep business rules out of presentation/transport layers where the existing architecture supports separation.
+- Prefer explicit dependencies over hidden global state.
+- Avoid circular dependencies.
+- New abstractions require a concrete current need.
+- Structural changes must document:
+  - context;
+  - decision;
+  - alternatives considered;
+  - consequences;
+  - migration impact.
+- Record important decisions in `docs/ai/DECISIONS.md`.
+- For legacy systems, prefer seams, adapters and incremental replacement over full rewrites.
