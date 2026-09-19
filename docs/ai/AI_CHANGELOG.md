@@ -39,6 +39,41 @@ No structural change / ADR reference
 **Follow-up**
 ...
 
+### 2026-09-19 - PawaPay client interface (Phase 2)
+
+**Task**
+Isolate v1 HTTP behind `WC_PawaPay_Client` without calling `/v2/deposits`.
+
+**Components affected**
+`includes/class-wc-pawapay-client.php`, `includes/class-wc-pawapay-api.php`, gateway/deposit type hints, `tests/client-test.php`.
+
+**Behavior changed**
+Invalid JSON and transport failures now always include `error` / `error_type`. Checkout and poll already treated `error` or HTTP >= 500 as failure. Live URL remains v1 `/deposits`.
+
+**Database**
+None.
+
+**Dependencies**
+None.
+
+**Tests**
+`php tests/client-test.php` plus existing script tests.
+
+**Security review**
+PASS WITH CONDITIONS. Authenticated calls now set `redirection => 0`; debug omits unparsed bodies.
+
+**Verifier**
+PASS. Live path remains v1 `/deposits`.
+
+**Architecture**
+ADR-003.
+
+**Known limitations**
+No v2 adapter. No GET retry loop. Token still lives in gateway settings.
+
+**Follow-up**
+Phase 3 initiate lock.
+
 ### 2026-09-19 - Payment attempts table (Phase 1)
 
 **Task**

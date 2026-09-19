@@ -186,7 +186,7 @@ class WC_PawaPay_Deposit {
         );
     }
 
-    public static function sync_from_api( WC_Order $order, WC_PawaPay_API $api ): string {
+    public static function sync_from_api( WC_Order $order, WC_PawaPay_Client $api ): string {
         $deposit_id = (string) $order->get_meta( '_pawapay_deposit_id' );
         if ( $deposit_id === '' ) {
             return $order->get_status();

@@ -4,6 +4,7 @@
  */
 define( 'ABSPATH', __DIR__ );
 
+require dirname( __DIR__ ) . '/includes/class-wc-pawapay-client.php';
 require dirname( __DIR__ ) . '/includes/class-wc-pawapay-api.php';
 
 $cases = [

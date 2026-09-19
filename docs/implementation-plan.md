@@ -28,9 +28,11 @@ No runtime change.
 
 ## Phase 2 — PawaPay client interface
 
+**Status:** done 2026-09-19 (plugin **1.3.1**). Live path still v1 `POST /deposits`.
+
 **Goal:** Isolate v1 HTTP. Prepare v2 later.
 
-**New:** `ClientInterface`, keep `WC_PawaPay_API` as `V1Client` adapter. Do not call v2 `/v2/deposits` until product decides (current live path is **v1** `POST /deposits`).
+**New:** `includes/class-wc-pawapay-client.php`. `WC_PawaPay_API` is the v1 adapter. Do not call v2 `/v2/deposits` until product decides.
 
 **Tests:** statement sanitizer (exists); redact; timeout/error normalization.
 

@@ -67,6 +67,10 @@ Bump `Version:` and `WC_PAWAPAY_VERSION`, push `main`, tag `vX.Y.Z`. WordPress c
 
 ## Changelog
 
+### 1.3.1
+
+- PawaPay HTTP is behind `WC_PawaPay_Client`. Live deposits stay on v1 `/deposits`.
+
 ### 1.3.0
 
 - Payment attempts table; retries keep earlier deposit ids; 1.x order meta still written.
@@ -113,6 +117,7 @@ php tests/providers-test.php
 php tests/deposit-status-test.php
 php tests/currency-test.php
 php tests/attempt-test.php
+php tests/client-test.php
 ```
 
 Requires PHP 8.0+ and WooCommerce.

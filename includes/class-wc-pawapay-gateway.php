@@ -508,7 +508,7 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
         WC_PawaPay_Deposit::sync_from_api( $order, $this->get_api() );
     }
 
-    public function get_api(): WC_PawaPay_API {
+    public function get_api(): WC_PawaPay_Client {
         return new WC_PawaPay_API(
             (string) $this->get_option( 'api_token' ),
             $this->get_option( 'sandbox' ) === 'yes',

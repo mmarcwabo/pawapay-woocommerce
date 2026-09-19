@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.1
+
+- Introduce `WC_PawaPay_Client` so checkout and poll depend on a contract, not a URL version.
+- Keep live traffic on Merchant API v1 (`POST /deposits`, `GET /deposits/{id}`). No v2 deposit calls.
+- Normalize timeouts, connection errors, 5xx, and invalid JSON. Debug redaction now covers tokens as well as MSISDNs.
+
 ## 1.3.0
 
 - Store every PawaPay deposit as a payment attempt (`{prefix}pawapay_transactions`). Retries no longer erase earlier deposit ids.

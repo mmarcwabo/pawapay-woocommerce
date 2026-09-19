@@ -43,3 +43,25 @@ Plugin 1.3.0. `find_order()` prefers the attempts table, then meta, then backfil
 
 **Date**
 2026-09-19
+
+### ADR-003 - Client interface now; v1 HTTP until an explicit cutover
+
+**Status:** Accepted.
+
+**Context**
+Live Maungano deposits use Merchant API v1 `POST /deposits`. A v2 client in the same step would change money movement.
+
+**Decision**
+Add `WC_PawaPay_Client`. `WC_PawaPay_API` implements it and keeps v1 paths. Do not add a v2 client or call `/v2/deposits` until product decides. Gateway and poll type-hint the interface.
+
+**Alternatives considered**
+Ship a stub `V2Client` — rejected; unused money-path code is a footgun.
+
+**Consequences**
+Plugin 1.3.1. A later phase can add a v2 adapter behind the same interface.
+
+**Migration / rollback impact**
+None for merchants. `get_api()` still returns `WC_PawaPay_API`.
+
+**Date**
+2026-09-19

@@ -1,7 +1,7 @@
 # Architecture
 
 ## Architecture status
-Observed 2026-09-19 on plugin **1.3.0**. Attempts table is live; trusted completion (Phase 4) is **not** implemented yet.
+Observed 2026-09-19 on plugin **1.3.1**. Attempts table and `WC_PawaPay_Client` are live; trusted completion (Phase 4) is **not** implemented yet.
 
 ## Current architecture
 Classic WooCommerce payment gateway. `WC_PawaPay_Gateway` owns checkout fields, initiation, settings, and admin actions. Shared `WC_PawaPay_Deposit::apply()` writes Woo status from webhook JSON or from `GET /deposits/{id}`. Attempts table dual-writes deposits. No Action Scheduler, no signed webhooks.
@@ -15,7 +15,7 @@ Checkout JS: operator cards + phone compose. Thank-you JS: fixed-interval poll.
 | Area | Class / files |
 |---|---|
 | Woo adapter | `class-wc-pawapay-gateway.php` (large) |
-| HTTP | `class-wc-pawapay-api.php` (v1 only) |
+| HTTP | `WC_PawaPay_Client` + `class-wc-pawapay-api.php` (v1 `POST /deposits`) |
 | Catalog | `class-wc-pawapay-providers.php` (static) |
 | FX | `class-wc-pawapay-currency.php` |
 | Sync | `class-wc-pawapay-deposit.php` |
