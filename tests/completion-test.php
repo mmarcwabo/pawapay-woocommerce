@@ -73,6 +73,7 @@ pawapay_assert( WC_PawaPay_Completion_Policy::decide( array_merge( $base, [ 'paw
 pawapay_assert( WC_PawaPay_Completion_Policy::decide( array_merge( $base, [ 'payment_method' => 'cod' ] ) ) === 'reject_method', 'wrong method refused' );
 pawapay_assert( WC_PawaPay_Completion_Policy::amounts_match( '30.00', '30' ), '30.00 matches 30' );
 pawapay_assert( ! WC_PawaPay_Completion_Policy::is_trusted_source( 'webhook' ), 'webhook is not trusted' );
+pawapay_assert( WC_PawaPay_Completion_Policy::is_trusted_source( 'reconciliation' ), 'reconciliation is trusted' );
 
 $body = '{"depositId":"dep-1","status":"COMPLETED"}';
 $digest = WC_PawaPay_Webhook_Verifier::content_digest( $body );

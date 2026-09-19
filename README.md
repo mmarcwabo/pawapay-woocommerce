@@ -31,7 +31,8 @@ A token is only needed if you point the checker at a private fork: `WC_PAWAPAY_G
 2. On `ACCEPTED`, Woo marks the order **pending** and shows the thank-you page.
 3. PawaPay POSTs a callback to `/pawapay-webhook/`. The plugin treats that as a hint and calls `GET /deposits/{id}`.
 4. If the callback is slow or blocked, the thank-you page polls the same GET with backoff. The poll response is a customer-safe status DTO.
-5. The order is paid only when that GET (or an admin status check) returns `COMPLETED` and the amount/currency match the payment attempt.
+5. If the customer leaves and the webhook never arrives, Action Scheduler GETs stale attempts in the background (every 5 minutes, with backoff).
+6. The order is paid only when that GET (or an admin status check) returns `COMPLETED` and the amount/currency match the payment attempt.
 
 The thank-you URL is not “paid” until a trusted PawaPay status lookup returns `COMPLETED`. **En cours** in WooCommerce means the deposit is paid and the order is being fulfilled.
 
@@ -69,6 +70,10 @@ DRC examples:
 Bump `Version:` and `WC_PAWAPAY_VERSION`, push `main`, tag `vX.Y.Z`. WordPress compares the header on `main` via Plugin Update Checker.
 
 ## Changelog
+
+### 2.2.0
+
+- Background reconciliation via Action Scheduler. Stale attempts are confirmed with `GET /deposits/{id}`.
 
 ### 2.1.0
 
@@ -136,6 +141,7 @@ php tests/client-test.php
 php tests/initiate-test.php
 php tests/completion-test.php
 php tests/poll-test.php
+php tests/reconcile-test.php
 ```
 
 Requires PHP 8.0+ and WooCommerce.

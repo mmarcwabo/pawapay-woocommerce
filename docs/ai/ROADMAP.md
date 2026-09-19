@@ -1,10 +1,10 @@
 # Engineering Roadmap
 
 ## Immediate stabilization
-Phase 1–5 in `docs/implementation-plan.md` (attempts, client seam, initiate lock, verified completion, waiting UX). Keep live v1 deposits working.
+Phase 1–6 in `docs/implementation-plan.md` (attempts, client seam, initiate lock, verified completion, waiting UX, reconciliation). Keep live v1 deposits working.
 
 ## Short-term improvements
-Phase 6–7: Action Scheduler, admin attempts panel.
+Phase 7: admin attempts panel.
 
 ## Medium-term improvements
 Phase 8–9: cached `/active-conf`, cautious provider detection, token constant, HPOS declare.

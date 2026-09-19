@@ -39,6 +39,41 @@ No structural change / ADR reference
 **Follow-up**
 ...
 
+### 2026-09-19 - Action Scheduler reconciliation (Phase 6)
+
+**Task**
+GET stale ACCEPTED/UNKNOWN attempts in the background when the customer leaves and the webhook is late.
+
+**Components affected**
+`WC_PawaPay_Reconciliation_Policy`, `WC_PawaPay_Reconciler`, attempt repository window/touch, `Deposit::sync_deposit`, `tests/reconcile-test.php`.
+
+**Behavior changed**
+Recurring Action Scheduler hook every 5 minutes. Up to 10 GETs per tick, by attempt deposit id, with age backoff. Same completion policy as poll (`source=reconciliation`).
+
+**Database**
+None (uses `updated_at` for backoff).
+
+**Dependencies**
+WooCommerce Action Scheduler (already bundled).
+
+**Tests**
+`php tests/reconcile-test.php` plus existing script tests.
+
+**Security review**
+PASS. Hook is not public. GET uses stored attempt ids. Deactivation now always loads the class before unscheduling. Non-2xx GET does not apply.
+
+**Verifier**
+PASS. Historical deposit ids selected; FAILED/fresh skipped; missing order does not GET.
+
+**Architecture**
+ADR-007. Version 2.2.0.
+
+**Known limitations**
+No GET after 48 hours except admin. No schedule if Action Scheduler is absent.
+
+**Follow-up**
+Phase 7 admin attempts panel.
+
 ### 2026-09-19 - Waiting UX + adaptive poll (Phase 5)
 
 **Task**

@@ -1,10 +1,10 @@
 # Architecture
 
 ## Architecture status
-Observed 2026-09-19 on plugin **2.1.0**. Attempts, v1 client, initiate lock, GET-before-complete, and waiting UX are live.
+Observed 2026-09-19 on plugin **2.2.0**. Attempts, v1 client, initiate lock, GET-before-complete, waiting UX, and Action Scheduler reconciliation are live.
 
 ## Current architecture
-Classic WooCommerce payment gateway. `WC_PawaPay_Gateway` owns checkout fields and settings. `WC_PawaPay_Payment_Service` initiates deposits. `WC_PawaPay_Callback_Processor` confirms callbacks with `GET /deposits/{id}`. `WC_PawaPay_Deposit::apply()` completes only from trusted sources after amount checks. No Action Scheduler. RFC 9421 ECDSA verify not claimed.
+Classic WooCommerce payment gateway. `WC_PawaPay_Gateway` owns checkout fields and settings. `WC_PawaPay_Payment_Service` initiates deposits. `WC_PawaPay_Callback_Processor` confirms callbacks with `GET /deposits/{id}`. `WC_PawaPay_Reconciler` GETs stale attempts via Action Scheduler. `WC_PawaPay_Deposit::apply()` completes only from trusted sources after amount checks. RFC 9421 ECDSA verify not claimed.
 
 ## High-level component map
 `wc-pawapay-gateway.php` boots storage/migrator, providers, currency, API, deposit, gateway, webhook, thankyou, i18n, PUC.
@@ -23,6 +23,7 @@ Checkout JS: operator cards + phone compose. Thank-you / order-pay JS: adaptive 
 | Attempts | `class-wc-pawapay-attempt.php`, repository, migrator |
 | Ingress | `class-wc-pawapay-webhook.php` (rewrite + REST) |
 | UX | `class-wc-pawapay-thankyou.php`, `class-wc-pawapay-poll-policy.php`, `assets/*` |
+| Reconcile | `class-wc-pawapay-reconciliation-policy.php`, `class-wc-pawapay-reconciler.php` |
 
 ## Data architecture
 `{prefix}pawapay_transactions` plus 1.x `_pawapay_*` meta. Last deposit still wins on meta. See `docs/architecture/payment-attempts.md`.
@@ -37,7 +38,7 @@ Poll: order key + nonce. Admin sync: Woo shop manager order action.
 PawaPay Merchant API v1 (`/deposits`, `/deposits/{id}`, `/active-conf` unused at runtime). Optional Aelia/WOOCS filters.
 
 ## Async jobs / queues / schedulers
-None. Poll + optional admin action only.
+Action Scheduler recurring `wc_pawapay_reconcile` (5 min). Poll + admin action remain.
 
 ## Runtime / deployment
 WordPress plugin; GitHub PUC on `main`. Maungano: `/var/www/maungano.com/wp-content/plugins/pawapay-woocommerce`.
@@ -46,4 +47,4 @@ WordPress plugin; GitHub PUC on `main`. Maungano: `/var/www/maungano.com/wp-cont
 `wc_get_logger()` source `wc-pawapay`. Debug can log redacted payloads.
 
 ## Known architectural compromises
-Gateway still large. RFC 9421 ECDSA not claimed. No Action Scheduler yet.
+Gateway still large. RFC 9421 ECDSA not claimed. Reconciliation stops after 48 hours.

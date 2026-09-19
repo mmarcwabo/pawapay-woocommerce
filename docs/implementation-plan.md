@@ -1,6 +1,6 @@
 # Implementation plan
 
-**2.0.0** shipped with Phase 1–4 (schema + initiation + verified completion). Phase 1 was **1.3.0**, Phase 3 **1.4.0**, Phase 5 **2.1.0**.
+**2.0.0** shipped with Phase 1–4 (schema + initiation + verified completion). Phase 1 was **1.3.0**, Phase 3 **1.4.0**, Phase 5 **2.1.0**, Phase 6 **2.2.0**.
 
 Rollback: deactivate 2.x and restore 1.2.1; 1.x meta still present. New table can remain unused.
 
@@ -78,9 +78,11 @@ No runtime change.
 
 ## Phase 6 — Action Scheduler reconciliation
 
+**Status:** done 2026-09-19 (plugin **2.2.0**).
+
 **Goal:** Find `ACCEPTED`/`UNKNOWN` older than N minutes; GET; backoff.
 
-**Requires:** Woo Action Scheduler (already on Maungano via Woo).
+**Requires:** Woo Action Scheduler (already on Maungano via Woo). Recurring hook `wc_pawapay_reconcile` every 5 minutes. Each run GETs at most 10 due attempts by **attempt** deposit id.
 
 ## Phase 7 — Admin panel
 

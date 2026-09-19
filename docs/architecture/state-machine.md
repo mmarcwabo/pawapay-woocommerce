@@ -1,8 +1,8 @@
 # Payment state machine
 
-## Current mapping (2.1.0)
+## Current mapping (2.2.0)
 
-Trusted `GET /deposits/{id}` (poll, admin, callback lookup) may complete the order. Unsigned callback JSON cannot.
+Trusted `GET /deposits/{id}` (poll, admin, reconciliation, callback lookup) may complete the order. Unsigned callback JSON cannot.
 
 | PawaPay | Woo today | Problem |
 |---|---|---|

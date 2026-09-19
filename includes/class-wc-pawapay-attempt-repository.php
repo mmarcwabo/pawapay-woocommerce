@@ -127,6 +127,62 @@ class WC_PawaPay_Attempt_Repository {
     }
 
     /**
+     * Active-window lookup for reconciliation. Oldest-checked first by updated_at.
+     *
+     * @param list<string> $statuses
+     * @return list<WC_PawaPay_Attempt>
+     */
+    public function find_in_created_window( array $statuses, int $created_after, int $created_before, int $limit = 50 ): array {
+        $statuses = array_values( array_filter( $statuses, 'is_string' ) );
+        if ( $statuses === [] || $limit <= 0 ) {
+            return [];
+        }
+
+        $after  = gmdate( 'Y-m-d H:i:s', $created_after );
+        $before = gmdate( 'Y-m-d H:i:s', $created_before );
+
+        if ( $this->use_memory ) {
+            $found = [];
+            foreach ( $this->memory as $attempt ) {
+                if ( ! in_array( $attempt->status(), $statuses, true ) ) {
+                    continue;
+                }
+                if ( $attempt->created_at() < $after || $attempt->created_at() > $before ) {
+                    continue;
+                }
+                $found[] = $attempt;
+            }
+            usort( $found, static fn( WC_PawaPay_Attempt $a, WC_PawaPay_Attempt $b ) => strcmp( $a->updated_at(), $b->updated_at() ) );
+            return array_slice( $found, 0, $limit );
+        }
+
+        global $wpdb;
+        $placeholders = implode( ',', array_fill( 0, count( $statuses ), '%s' ) );
+        $sql          = "SELECT * FROM {$this->table()} WHERE status IN ($placeholders) AND created_at >= %s AND created_at <= %s ORDER BY updated_at ASC LIMIT %d";
+        $args         = array_merge( $statuses, [ $after, $before, $limit ] );
+        $rows         = $wpdb->get_results( $wpdb->prepare( $sql, $args ), ARRAY_A );
+
+        if ( ! is_array( $rows ) ) {
+            return [];
+        }
+
+        return array_map( [ 'WC_PawaPay_Attempt', 'from_row' ], $rows );
+    }
+
+    public function touch( string $deposit_id ): bool {
+        $attempt = $this->find_by_deposit_id( $deposit_id );
+        if ( ! $attempt || $attempt->is_completed() ) {
+            return false;
+        }
+
+        if ( ! $attempt->apply_status( $attempt->status() ) ) {
+            return false;
+        }
+
+        return $this->update( $attempt );
+    }
+
+    /**
      * @param array<string, mixed> $extra
      */
     public function mark_status( string $deposit_id, string $status, array $extra = [] ): bool {

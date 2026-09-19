@@ -10,7 +10,7 @@
 | Authenticated `GET /deposits/{id}` with merchant token | Trusted transaction status. |
 | `wp-config` / env API token | Secret. Never localize to JS. |
 
-## Current controls (2.1.0)
+## Current controls (2.2.0)
 
 **Present**
 

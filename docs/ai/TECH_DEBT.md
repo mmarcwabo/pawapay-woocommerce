@@ -28,8 +28,11 @@
 
 ## P2 - Medium
 
-### TD-006 - No background reconciliation
-- TD-007 - Gateway god class
+### TD-006 - Background reconciliation window
+- Evidence: Recurring `wc_pawapay_reconcile` GETs due attempts (2.2.0). Stops after 48 hours.
+- Status: Mitigated. Residual: no job if Action Scheduler is missing; admin still needed for very old rows.
+
+### TD-007 - Gateway god class
 - TD-008 - Static provider catalog (`/active-conf` unused)
 - TD-009 - Token only in wp-admin options
 - TD-010 - No HPOS compatibility declaration

@@ -1,6 +1,6 @@
 # Payment flow
 
-Observed on plugin **2.1.0**. Live Maungano deposits completed on the 1.2.1 path; 1.3–2.1 add attempts, a v1 client, initiate lock, GET-before-complete, and a waiting screen.
+Observed on plugin **2.2.0**. Live Maungano deposits completed on the 1.2.1 path; 1.3–2.2 add attempts, a v1 client, initiate lock, GET-before-complete, a waiting screen, and background reconciliation.
 
 ## Current flow (as implemented)
 
@@ -27,6 +27,7 @@ sequenceDiagram
         P-->>W: POST callback (hint)
         W->>P: GET /deposits/{id}
         C->>W: AJAX poll GET /deposits/{id}
+        Note over W: Action Scheduler also GETs stale attempts
         W->>Woo: payment_complete() if COMPLETED + amounts match
     else timeout / connection
         G->>G: attempt UNKNOWN, order stays pending
@@ -50,7 +51,7 @@ sequenceDiagram
 - `_pawapay_deposit_id` is still a latest-deposit pointer. A retry overwrites that meta key; earlier deposits remain in the attempts table.
 - Full RFC 9421 ECDSA callback signatures are not verified yet.
 - Poll is adaptive but not rate-limited (Phase 9).
-- No Action Scheduler reconciliation if the customer leaves and the webhook never arrives (admin “Check PawaPay status” is manual only).
+- Reconciliation stops after 48 hours; admin “Check PawaPay status” remains for older rows.
 
 ## Target flow
 

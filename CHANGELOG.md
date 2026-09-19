@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.0
+
+- Background reconciliation: every 5 minutes Action Scheduler GETs stale `ACCEPTED` / `UNKNOWN` (and `PROCESSING` / `INITIATING`) attempts older than 3 minutes.
+- Each run checks at most 10 attempts, by attempt deposit id (not only the latest `_pawapay_deposit_id`). Backoff grows from 3 minutes to 1 hour. Attempts older than 48 hours are left for admin review.
+- Completion still uses the trusted `reconciliation` source and the same amount checks as poll.
+
 ## 2.1.0
 
 - Thank-you and order-pay show a dedicated waiting card: confirm on the phone, masked number, amount. Polling backs off (3s → 15s) instead of every 3 seconds.

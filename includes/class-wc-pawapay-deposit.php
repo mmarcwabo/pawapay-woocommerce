@@ -241,14 +241,47 @@ class WC_PawaPay_Deposit {
      * @param array<string, mixed> $options
      */
     public static function sync_from_api( WC_Order $order, WC_PawaPay_Client $api, string $source = 'poll', array $options = [] ): string {
-        $deposit_id = (string) $order->get_meta( '_pawapay_deposit_id' );
+        return self::sync_deposit(
+            $order,
+            (string) $order->get_meta( '_pawapay_deposit_id' ),
+            $api,
+            $source,
+            $options
+        );
+    }
+
+    /**
+     * GET one deposit id. Used by poll (latest meta) and reconciliation (attempt id).
+     *
+     * @param array<string, mixed> $options
+     */
+    public static function sync_deposit(
+        WC_Order $order,
+        string $deposit_id,
+        WC_PawaPay_Client $api,
+        string $source = 'poll',
+        array $options = []
+    ): string {
+        $deposit_id = trim( $deposit_id );
         if ( $deposit_id === '' ) {
             return $order->get_status();
         }
 
         $payload = $api->check_deposit_status( $deposit_id );
-        if ( isset( $payload['error'] ) ) {
+        $code    = (int) ( $payload['_http_code'] ?? 0 );
+        if ( isset( $payload['error'] ) || ( $code > 0 && ( $code < 200 || $code >= 300 ) ) ) {
             return $order->get_status();
+        }
+
+        $data = self::extract_deposit_payload( $payload );
+        if ( empty( $data['depositId'] ) ) {
+            if ( isset( $payload[0] ) && is_array( $payload[0] ) ) {
+                $payload[0]['depositId'] = $deposit_id;
+            } elseif ( isset( $payload['data'] ) && is_array( $payload['data'] ) ) {
+                $payload['data']['depositId'] = $deposit_id;
+            } else {
+                $payload['depositId'] = $deposit_id;
+            }
         }
 
         return self::apply( $order, $payload, $source, $options );

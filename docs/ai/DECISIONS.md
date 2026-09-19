@@ -131,3 +131,25 @@ None for deposits. Older poll JS expecting `{status,paid,reload}` is replaced wi
 
 **Date**
 2026-09-19
+
+### ADR-007 - Recurring sweep, not one Action per deposit
+
+**Status:** Accepted.
+
+**Context**
+If the customer leaves thank-you and the webhook is blocked, nothing GETs PawaPay. Scheduling one Action Scheduler job per deposit would fill the actions table.
+
+**Decision**
+One recurring `wc_pawapay_reconcile` every 5 minutes. Select due `ACCEPTED`/`UNKNOWN`/`PROCESSING`/`INITIATING` attempts older than 3 minutes and younger than 48 hours. GET the **attempt** deposit id. Touch `updated_at` so backoff applies (3 min → 1 hour). Batch 10 per tick.
+
+**Alternatives considered**
+WP-Cron only — rejected; Woo already ships Action Scheduler on Maungano. Per-deposit actions — rejected; table bloat.
+
+**Consequences**
+Plugin 2.2.0. Admin “Check PawaPay status” remains. After 48 hours, only admin/manual GET.
+
+**Migration / rollback impact**
+Deactivate unschedules the hook. No schema change.
+
+**Date**
+2026-09-19
