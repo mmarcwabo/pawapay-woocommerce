@@ -69,7 +69,12 @@ class WC_PawaPay_Thankyou {
             $gateways = WC()->payment_gateways()->payment_gateways();
             $gateway  = $gateways['pawapay'] ?? null;
             if ( $gateway instanceof WC_PawaPay_Gateway ) {
-                WC_PawaPay_Deposit::sync_from_api( $order, $gateway->get_api() );
+                WC_PawaPay_Deposit::sync_from_api(
+                    $order,
+                    $gateway->get_api(),
+                    'poll',
+                    [ 'fail_woo_on_failed' => $gateway->get_option( 'fail_woo_on_failed_deposit' ) === 'yes' ]
+                );
                 $order = wc_get_order( $order_id );
             }
         }

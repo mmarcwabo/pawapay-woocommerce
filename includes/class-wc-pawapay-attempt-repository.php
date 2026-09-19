@@ -144,6 +144,45 @@ class WC_PawaPay_Attempt_Repository {
         return $this->update( $attempt );
     }
 
+    /**
+     * Atomically move an attempt to COMPLETED. Winner is the only caller that gets "claimed".
+     *
+     * @return 'claimed'|'already'|'missing'
+     */
+    public function claim_completion( string $deposit_id, array $extra = [] ): string {
+        $attempt = $this->find_by_deposit_id( $deposit_id );
+        if ( ! $attempt ) {
+            return 'missing';
+        }
+        if ( $attempt->is_completed() ) {
+            return 'already';
+        }
+        if ( ! $attempt->apply_status( WC_PawaPay_Attempt::STATUS_COMPLETED, $extra ) ) {
+            return 'already';
+        }
+
+        if ( $this->use_memory ) {
+            $this->memory[ $attempt->deposit_id() ] = $attempt;
+            return 'claimed';
+        }
+
+        global $wpdb;
+        $now = $attempt->updated_at();
+        $ok  = $wpdb->query(
+            $wpdb->prepare(
+                "UPDATE {$this->table()} SET status = %s, completed_at = %s, updated_at = %s, provider_transaction_id = %s WHERE deposit_id = %s AND status <> %s",
+                WC_PawaPay_Attempt::STATUS_COMPLETED,
+                $attempt->completed_at() ?? $now,
+                $now,
+                $attempt->provider_transaction_id(),
+                $deposit_id,
+                WC_PawaPay_Attempt::STATUS_COMPLETED
+            )
+        );
+
+        return $ok === 1 ? 'claimed' : 'already';
+    }
+
     public function update( WC_PawaPay_Attempt $attempt ): bool {
         if ( $attempt->deposit_id() === '' ) {
             return false;

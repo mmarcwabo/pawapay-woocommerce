@@ -72,6 +72,11 @@ class WC_PawaPay_I18n {
             'Could not start this payment. Please try again.' => 'Impossible de démarrer ce paiement. Réessayez.',
             'Order not found.' => 'Commande introuvable.',
             'This order is already paid. Do not send another payment.' => 'Cette commande est déjà payée. N’envoyez pas un autre paiement.',
+            'Require signed callbacks' => 'Exiger des callbacks signés',
+            'Reject callbacks that fail Content-Digest / Signature-Date checks' => 'Rejeter les callbacks dont le Content-Digest ou la Signature-Date est invalide',
+            'Leave off until PawaPay “Sign all callbacks” is enabled. Unsigned callbacks are still confirmed with GET /deposits/{id} and cannot mark an order paid by themselves.' => 'Laissez désactivé tant que « Sign all callbacks » n’est pas activé chez PawaPay. Les callbacks non signés sont confirmés par GET /deposits/{id} et ne peuvent pas marquer une commande payée tout seuls.',
+            'Mark order failed on failed deposit' => 'Marquer la commande échouée si le dépôt échoue',
+            'Set the WooCommerce order to failed when PawaPay reports FAILED (blocks Pay again)' => 'Passer la commande WooCommerce à échouée lorsque PawaPay indique FAILED (empêche de payer à nouveau)',
         ];
 
         return $map[ $text ] ?? $translation;

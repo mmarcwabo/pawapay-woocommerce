@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0.0
+
+- Callbacks are a hint. An order is paid only after `GET /deposits/{id}` (or another trusted status lookup) confirms `COMPLETED`.
+- A forged `COMPLETED` callback can no longer mark an order paid.
+- Duplicate `COMPLETED` lookups complete the order once (`claim_completion`).
+- Amount and currency must match the frozen payment attempt (`30` equals `30.00`). Sandbox deposited≠requested is recorded, not used as the match.
+- A failed PawaPay deposit fails the **attempt**. The WooCommerce order stays pending unless “Mark order failed on failed deposit” is enabled.
+- Optional “Require signed callbacks” checks Content-Digest and Signature-Date. Leave it off until PawaPay “Sign all callbacks” is on. Full RFC 9421 ECDSA verification is not claimed yet.
+
+**Upgrade:** 1.x orders keep `_pawapay_deposit_id`. New and old callbacks both confirm via GET. Do not enable signed callbacks in the PawaPay dashboard until this version is live and the plugin setting is on.
+
 ## 1.4.0
 
 - Initiate through `WC_PawaPay_Payment_Service`: amount and currency come from the WooCommerce order, not from JavaScript.

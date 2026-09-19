@@ -10,10 +10,12 @@
 | Authenticated `GET /deposits/{id}` with merchant token | Trusted transaction status. |
 | `wp-config` / env API token | Secret. Never localize to JS. |
 
-## Current controls (1.2.1)
+## Current controls (2.0.0)
 
 **Present**
 
+- Callbacks confirm with `GET /deposits/{id}` before `payment_complete()`.
+- Amount/currency matched to the frozen attempt. Duplicate COMPLETED is claimed once.
 - Amount taken from the Woo order, not from the form.
 - Operator and currency checked against enabled lists.
 - MSISDN composed/validated server-side (`7–15` digits).
@@ -23,15 +25,11 @@
 
 **Missing or weak**
 
-- Webhook `permission_callback` is `__return_true`. Anyone who can POST JSON with a known `depositId` and `status: COMPLETED` can complete that order. Poll is safer because it asks PawaPay.
-- No RFC 9421 callback signature verification. Dashboard “Sign all callbacks” is unused (and must stay off until we verify).
-- No replay store / signature-date window.
-- No amount/currency match against the frozen attempt before `payment_complete()`.
-- Order notes still store the **full** MSISDN.
+- REST `permission_callback` is still `__return_true`; the body is no longer authoritative.
+- Full RFC 9421 ECDSA verification is not implemented. Optional digest + Signature-Date gate only.
+- `_pawapay_phone` meta still stores the full MSISDN.
 - API token lives in `woocommerce_pawapay_settings` only (no `WC_PAWAPAY_API_TOKEN` constant).
 - Poll has no rate limit.
-- `apply()` uses a non-atomic “already paid?” check (race between webhook, poll, admin).
-- REST route is a second unsigned public writer of payment state.
 
 ## Target controls
 

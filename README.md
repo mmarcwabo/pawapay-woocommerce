@@ -29,10 +29,13 @@ A token is only needed if you point the checker at a private fork: `WC_PAWAPAY_G
 
 1. Checkout sends `POST /deposits`.
 2. On `ACCEPTED`, Woo marks the order **pending** and shows the thank-you page.
-3. PawaPay should POST the final status to `/pawapay-webhook/`.
-4. If the callback is slow or blocked, the thank-you page polls `GET /deposits/{id}` and updates the order.
+3. PawaPay POSTs a callback to `/pawapay-webhook/`. The plugin treats that as a hint and calls `GET /deposits/{id}`.
+4. If the callback is slow or blocked, the thank-you page polls the same GET.
+5. The order is paid only when that GET (or an admin status check) returns `COMPLETED` and the amount/currency match the payment attempt.
 
-The thank-you URL is not “paid” until PawaPay returns `COMPLETED` (webhook or poll). **En cours** in WooCommerce means the deposit is paid and the order is being fulfilled.
+The thank-you URL is not “paid” until a trusted PawaPay status lookup returns `COMPLETED`. **En cours** in WooCommerce means the deposit is paid and the order is being fulfilled.
+
+Leave PawaPay **Sign all callbacks** off unless you also enable **Require signed callbacks** in the gateway. Unsigned callbacks are still safe because they cannot complete an order without the GET.
 
 From 1.3.0 each `POST /deposits` is also stored as a **payment attempt** row. One WooCommerce order can have several attempts. The latest deposit is still copied onto `_pawapay_deposit_id` so 1.x tools keep working. The table is created on activate and on upgrade (`wc_pawapay_schema_version`).
 
@@ -66,6 +69,10 @@ DRC examples:
 Bump `Version:` and `WC_PAWAPAY_VERSION`, push `main`, tag `vX.Y.Z`. WordPress compares the header on `main` via Plugin Update Checker.
 
 ## Changelog
+
+### 2.0.0
+
+- Callbacks cannot mark an order paid. Status is confirmed with `GET /deposits/{id}`. Failed deposits no longer fail the Woo order by default.
 
 ### 1.4.0
 
@@ -123,6 +130,7 @@ php tests/currency-test.php
 php tests/attempt-test.php
 php tests/client-test.php
 php tests/initiate-test.php
+php tests/completion-test.php
 ```
 
 Requires PHP 8.0+ and WooCommerce.

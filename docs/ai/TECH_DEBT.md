@@ -3,9 +3,9 @@
 ## P0 - Critical
 
 ### TD-001 - Unsigned webhook completes orders
-- Evidence: `WC_PawaPay_Webhook::apply_payload` trusts JSON `status`; REST `permission_callback` is `__return_true`.
-- Impact: Forged COMPLETED can pay an order if deposit id is known.
-- Status: Open. Target: Phase 4.
+- Evidence: Callbacks now `GET /deposits/{id}` before `apply()`. Source `webhook` cannot complete.
+- Impact: Residual: REST route is still public (by design); signed RFC 9421 ECDSA is not fully verified.
+- Status: Mitigated. Target: stronger signature verify when dashboard signing is enabled.
 
 ### TD-002 - One deposit id per order
 - Evidence: `process_payment` still overwrites `_pawapay_deposit_id` (1.x pointer). History is now in `{prefix}pawapay_transactions`.
@@ -15,14 +15,12 @@
 ## P1 - High
 
 ### TD-003 - Failed deposit fails the Woo order
-- Evidence: `Deposit::apply` FAILED/REJECTED → `update_status('failed')`.
-- Impact: Customer cannot Pay again on the same order.
-- Status: Open. Target: Phase 4.
+- Evidence: Default is attempt `FAILED`, order stays pending. Optional setting `fail_woo_on_failed_deposit`.
+- Status: Mitigated.
 
 ### TD-004 - Non-atomic completion
-- Evidence: status check then `payment_complete()` without attempt lock.
-- Impact: Duplicate emails/fulfillment under concurrent poll+webhook.
-- Status: Open. Target: Phase 4.
+- Evidence: `claim_completion()` wins on the attempt row; loser no-ops. Memory path is test-only.
+- Status: Mitigated. Residual: no DB `SELECT … FOR UPDATE` around `payment_complete()`.
 
 ### TD-005 - Full MSISDN in order notes
 - Evidence: New initiation notes use `masked_msisdn`. `_pawapay_phone` meta still stores the full number for 1.x compatibility.

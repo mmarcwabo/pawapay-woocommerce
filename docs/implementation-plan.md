@@ -1,6 +1,6 @@
 # Implementation plan
 
-**Do not bump to 2.0.0 until Phase 1–4 ship together** (schema + initiation + verified completion). Phase 1 shipped as **1.3.0**.
+**2.0.0** shipped with Phase 1–4 (schema + initiation + verified completion). Phase 1 was **1.3.0**, Phase 3 **1.4.0**.
 
 Rollback: deactivate 2.x and restore 1.2.1; 1.x meta still present. New table can remain unused.
 
@@ -54,7 +54,11 @@ No runtime change.
 
 ## Phase 4 — Webhook + state machine
 
+**Status:** done 2026-09-19 (plugin **2.0.0**).
+
 **Goal:** Hint + verify. Signed callbacks when enabled; always `GET` before complete if unsigned.
+
+**New:** `class-wc-pawapay-completion-policy.php`, `class-wc-pawapay-webhook-verifier.php`, `class-wc-pawapay-callback-processor.php`.
 
 **Touch:** `class-wc-pawapay-webhook.php` → verifier + processor. `Deposit::apply` becomes attempt-aware and amount-checked.
 

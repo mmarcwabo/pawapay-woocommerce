@@ -1,6 +1,6 @@
 # Payment flow
 
-Observed on plugin **1.4.0**. Live Maungano deposits completed on the 1.2.1 path; 1.3–1.4 add attempts, a v1 client, and initiate lock.
+Observed on plugin **2.0.0**. Live Maungano deposits completed on the 1.2.1 path; 1.3–2.0 add attempts, a v1 client, initiate lock, and GET-before-complete.
 
 ## Current flow (as implemented)
 
@@ -24,9 +24,10 @@ sequenceDiagram
         G->>Woo: pending + empty cart
         G->>C: redirect order-received
         C->>P: Approve on phone
-        P-->>W: POST callback (unsigned)
+        P-->>W: POST callback (hint)
+        W->>P: GET /deposits/{id}
         C->>W: AJAX poll GET /deposits/{id}
-        W->>Woo: payment_complete()
+        W->>Woo: payment_complete() if COMPLETED + amounts match
     else timeout / connection
         G->>G: attempt UNKNOWN, order stays pending
         G->>C: thank-you / wait (do not pay again)
@@ -47,8 +48,8 @@ sequenceDiagram
 
 - Redirect on `ACCEPTED` is the normal Woo thank-you page plus a banner, not a dedicated waiting screen.
 - `_pawapay_deposit_id` is still a latest-deposit pointer. A retry overwrites that meta key; earlier deposits remain in the attempts table.
-- Webhook JSON `status` is applied without cryptographic verification and without re-fetching PawaPay (poll does re-fetch).
-- `FAILED` / `REJECTED` on the deposit sets the **Woo order** to `failed`, which blocks Pay again on that order.
+- Full RFC 9421 ECDSA callback signatures are not verified yet.
+- Dedicated waiting screen (Phase 5) is still the normal thank-you page.
 - No Action Scheduler reconciliation if the customer leaves and the webhook never arrives (admin “Check PawaPay status” is manual only).
 
 ## Target flow

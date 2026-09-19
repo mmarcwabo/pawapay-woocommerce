@@ -1,19 +1,19 @@
 # Payment state machine
 
-## Current mapping (implicit)
+## Current mapping (2.0.0)
 
-PawaPay v1 deposit status is applied almost directly onto the Woo order.
+Trusted `GET /deposits/{id}` (poll, admin, callback lookup) may complete the order. Unsigned callback JSON cannot.
 
 | PawaPay | Woo today | Problem |
 |---|---|---|
 | *(none yet)* | pending (after place order) | OK |
 | ACCEPTED / SUBMITTED / ENQUEUED | pending + note | OK |
 | COMPLETED | `payment_complete()` → processing/completed | OK if authentic |
-| FAILED / REJECTED | **order `failed`** | Blocks retry on the same order |
-| HTTP timeout / 5xx on initiate | checkout failure; order may exist unpaid | May look like “failed” to the shopper |
-| Unknown status | note + log | No UNKNOWN attempt state |
+| FAILED / REJECTED | attempt failed; Woo stays pending | Optional setting can still fail the order |
+| HTTP timeout / 5xx on initiate | attempt UNKNOWN, Woo pending | Customer is not told it failed |
+| Unknown status | attempt UNKNOWN / ignore | Reconcile via GET |
 
-`WC_PawaPay_Deposit::apply()` returns immediately if Woo is already `processing`, `completed`, `failed`, `cancelled`, or `refunded`. That is **not** a lock: two workers can both see `pending` and both call `payment_complete()`.
+`claim_completion()` is the attempt-level lock. Two workers can still race `payment_complete()` if the attempt is already COMPLETED and the order is unpaid (`complete_order_only`); Woo `needs_payment()` limits a second fulfillment.
 
 ## Target internal attempt states
 

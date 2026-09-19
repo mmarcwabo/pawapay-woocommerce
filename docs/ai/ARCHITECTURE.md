@@ -1,10 +1,10 @@
 # Architecture
 
 ## Architecture status
-Observed 2026-09-19 on plugin **1.4.0**. Attempts table, `WC_PawaPay_Client`, and initiate lock are live; trusted completion (Phase 4) is **not** implemented yet.
+Observed 2026-09-19 on plugin **2.0.0**. Attempts, v1 client, initiate lock, and GET-before-complete are live.
 
 ## Current architecture
-Classic WooCommerce payment gateway. `WC_PawaPay_Gateway` owns checkout fields and settings. `WC_PawaPay_Payment_Service` initiates deposits with a lock and frozen order amounts. Shared `WC_PawaPay_Deposit::apply()` writes Woo status from webhook JSON or from `GET /deposits/{id}`. No Action Scheduler, no signed webhooks.
+Classic WooCommerce payment gateway. `WC_PawaPay_Gateway` owns checkout fields and settings. `WC_PawaPay_Payment_Service` initiates deposits. `WC_PawaPay_Callback_Processor` confirms callbacks with `GET /deposits/{id}`. `WC_PawaPay_Deposit::apply()` completes only from trusted sources after amount checks. No Action Scheduler. RFC 9421 ECDSA verify not claimed.
 
 ## High-level component map
 `wc-pawapay-gateway.php` boots storage/migrator, providers, currency, API, deposit, gateway, webhook, thankyou, i18n, PUC.
@@ -28,7 +28,7 @@ Checkout JS: operator cards + phone compose. Thank-you JS: fixed-interval poll.
 `{prefix}pawapay_transactions` plus 1.x `_pawapay_*` meta. Last deposit still wins on meta. See `docs/architecture/payment-attempts.md`.
 
 ## Authentication
-Merchant Bearer token to PawaPay. Webhook has no caller auth.
+Merchant Bearer token to PawaPay. Public callback is unauthenticated; status is confirmed with a token GET.
 
 ## Authorization
 Poll: order key + nonce. Admin sync: Woo shop manager order action.
@@ -46,4 +46,4 @@ WordPress plugin; GitHub PUC on `main`. Maungano: `/var/www/maungano.com/wp-cont
 `wc_get_logger()` source `wc-pawapay`. Debug can log redacted payloads.
 
 ## Known architectural compromises
-God gateway; unsigned webhook applies status; FAILED fails the Woo order. Attempt history exists from 1.3.0.
+Gateway still large. RFC 9421 ECDSA not claimed. No Action Scheduler yet.

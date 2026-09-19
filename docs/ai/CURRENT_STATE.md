@@ -3,7 +3,7 @@
 > Observed, not desired. Date: 2026-09-19.
 
 ## Baseline date
-2026-09-19. Working tree **1.4.0** (attempts table, v1 client, initiate lock). Last GitHub release tag may still be **v1.2.1** until this milestone is tagged.
+2026-09-19. Working tree **2.0.0** (attempts, v1 client, initiate lock, GET-before-complete). Last GitHub release tag may still be **v1.2.1** until this milestone is tagged.
 
 ## Repository health
 Single `main`. Composer: PHP 8.0+, Plugin Update Checker 5.x. No CI in this repo.
@@ -33,7 +33,7 @@ Maungano production has completed **live** PawaPay deposits (operator confirmed 
 `README.md` + `CHANGELOG.md` + this `docs/architecture/*` set. Older `docs/ai/*` placeholders filled from this audit.
 
 ## Major known risks
-Unsigned webhook can complete an order if `depositId` is guessed/leaked. Failed deposit still marks Woo `failed` via `Deposit::apply`.
+Poll is unrate-limited. RFC 9421 ECDSA callback signatures are not fully verified. Optional setting can still fail the Woo order on a failed deposit.
 
 ## Unknowns requiring confirmation
 Blocks checkout compatibility. Accuracy of MSISDN→MNO on DRC prefixes. Whether live Wordfence allows PawaPay production callback IPs.

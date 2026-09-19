@@ -87,3 +87,25 @@ None. 1.x meta still written.
 
 **Date**
 2026-09-19
+
+### ADR-005 - Callback is a hint; GET confirms before paid
+
+**Status:** Accepted.
+
+**Context**
+1.2.1 applied unsigned callback JSON, including forged `COMPLETED`.
+
+**Decision**
+Never complete from source `webhook`. The public callback looks up `GET /deposits/{id}` and applies that payload as `status-lookup`. Optional signed-callback setting rejects missing/invalid Content-Digest and Signature-Date. Woo `failed` on PawaPay FAILED is opt-in.
+
+**Alternatives considered**
+Trust signed body without GET — deferred until RFC 9421 ECDSA verify is proven.
+
+**Consequences**
+Plugin 2.0.0. PawaPay retries on HTTP 503 if GET fails.
+
+**Migration / rollback impact**
+Callback URL unchanged. Leave dashboard signing off unless the plugin setting is on.
+
+**Date**
+2026-09-19

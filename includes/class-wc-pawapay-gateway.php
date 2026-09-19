@@ -141,6 +141,19 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
                 'description' => __( 'Optional extra operators, one per line: LABEL|PROVIDER_CODE', 'wc-pawapay' ),
                 'default'     => '',
             ],
+            'verify_signed_callbacks' => [
+                'title'       => __( 'Require signed callbacks', 'wc-pawapay' ),
+                'type'        => 'checkbox',
+                'label'       => __( 'Reject callbacks that fail Content-Digest / Signature-Date checks', 'wc-pawapay' ),
+                'description' => __( 'Leave off until PawaPay “Sign all callbacks” is enabled. Unsigned callbacks are still confirmed with GET /deposits/{id} and cannot mark an order paid by themselves.', 'wc-pawapay' ),
+                'default'     => 'no',
+            ],
+            'fail_woo_on_failed_deposit' => [
+                'title'       => __( 'Mark order failed on failed deposit', 'wc-pawapay' ),
+                'type'        => 'checkbox',
+                'label'       => __( 'Set the WooCommerce order to failed when PawaPay reports FAILED (blocks Pay again)', 'wc-pawapay' ),
+                'default'     => 'no',
+            ],
             'debug'              => [
                 'title'   => __( 'Debug log', 'wc-pawapay' ),
                 'type'    => 'checkbox',
@@ -456,7 +469,12 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
     }
 
     public function sync_order_from_action( WC_Order $order ): void {
-        WC_PawaPay_Deposit::sync_from_api( $order, $this->get_api() );
+        WC_PawaPay_Deposit::sync_from_api(
+            $order,
+            $this->get_api(),
+            'admin',
+            [ 'fail_woo_on_failed' => $this->get_option( 'fail_woo_on_failed_deposit' ) === 'yes' ]
+        );
     }
 
     public function get_api(): WC_PawaPay_Client {

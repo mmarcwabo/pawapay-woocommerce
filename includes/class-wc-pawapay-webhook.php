@@ -2,11 +2,12 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Handles the asynchronous deposit callback from PawaPay.
+ * PawaPay deposit callback.
  *
  * Pretty permalink: {home}/pawapay-webhook/
  * REST fallback:    {home}/wp-json/pawapay/v1/deposits
- * Must return HTTP 200 and be idempotent.
+ *
+ * The posted status is a hint. Paid state comes from GET /deposits/{id}.
  */
 class WC_PawaPay_Webhook {
 
@@ -38,28 +39,35 @@ class WC_PawaPay_Webhook {
             exit( 'Method Not Allowed' );
         }
 
-        $raw_body = file_get_contents( 'php://input' );
-        $data     = json_decode( (string) $raw_body, true );
+        $raw = (string) file_get_contents( 'php://input' );
+        $data = json_decode( $raw, true );
         if ( ! is_array( $data ) ) {
             wc_get_logger()->warning( '[PawaPay Webhook] Invalid JSON received.', [ 'source' => 'wc-pawapay' ] );
             status_header( 400 );
             exit( 'Bad Request' );
         }
 
-        $ok = self::apply_payload( $data );
-        status_header( $ok ? 200 : 400 );
-        exit( $ok ? 'OK' : 'Bad Request' );
+        $result = self::process( $data, $raw, self::request_headers() );
+        status_header( $result['http'] );
+        exit( $result['ok'] ? 'OK' : 'Bad Request' );
     }
 
     public static function handle_rest( WP_REST_Request $request ) {
+        $raw  = $request->get_body();
         $data = $request->get_json_params();
         if ( ! is_array( $data ) ) {
             return new WP_Error( 'pawapay_bad_json', 'Bad Request', [ 'status' => 400 ] );
         }
 
-        $ok = self::apply_payload( $data );
-        if ( ! $ok ) {
-            return new WP_Error( 'pawapay_bad_payload', 'Bad Request', [ 'status' => 400 ] );
+        $headers = [];
+        foreach ( $request->get_headers() as $key => $value ) {
+            $name             = strtolower( str_replace( '_', '-', (string) $key ) );
+            $headers[ $name ] = is_array( $value ) ? (string) ( $value[0] ?? '' ) : (string) $value;
+        }
+
+        $result = self::process( $data, $raw, $headers );
+        if ( ! $result['ok'] ) {
+            return new WP_Error( 'pawapay_callback', $result['reason'], [ 'status' => $result['http'] ] );
         }
 
         return new WP_REST_Response( 'OK', 200 );
@@ -67,30 +75,76 @@ class WC_PawaPay_Webhook {
 
     /**
      * @param array<string, mixed> $data
+     * @param array<string, string> $headers
+     * @return array{ok: bool, http: int, reason: string}
      */
-    private static function apply_payload( array $data ): bool {
-        $payload    = WC_PawaPay_Deposit::extract_deposit_payload( $data );
-        $deposit_id = sanitize_text_field( $payload['depositId'] ?? ( $data['depositId'] ?? '' ) );
-        $status     = WC_PawaPay_Deposit::extract_status( $data );
-        $logger     = wc_get_logger();
+    public static function process( array $data, string $raw, array $headers ): array {
+        $gateway = self::gateway();
+        if ( ! $gateway ) {
+            return [ 'ok' => false, 'http' => 503, 'reason' => 'gateway_unavailable' ];
+        }
 
+        $require = $gateway->get_option( 'verify_signed_callbacks' ) === 'yes';
+        $processor = new WC_PawaPay_Callback_Processor( $gateway->get_api(), $require );
+        $resolved  = $processor->resolve( $data, $raw, $headers );
+
+        $logger = wc_get_logger();
         $logger->info(
-            sprintf( '[PawaPay Webhook] depositId=%s status=%s', $deposit_id, $status ),
+            sprintf(
+                '[PawaPay Webhook] depositId=%s hint=%s result=%s',
+                $resolved['deposit_id'],
+                WC_PawaPay_Deposit::extract_status( $data ),
+                $resolved['reason']
+            ),
             [ 'source' => 'wc-pawapay' ]
         );
 
-        if ( $deposit_id === '' || $status === '' ) {
-            $logger->warning( '[PawaPay Webhook] Missing depositId or status.', [ 'source' => 'wc-pawapay' ] );
-            return false;
+        if ( ! $resolved['ok'] ) {
+            return [ 'ok' => false, 'http' => $resolved['http'], 'reason' => $resolved['reason'] ];
         }
 
-        $order = WC_PawaPay_Deposit::find_order( $deposit_id );
+        $lookup = $resolved['lookup'];
+        if ( ! is_array( $lookup ) ) {
+            return [ 'ok' => true, 'http' => 200, 'reason' => $resolved['reason'] ];
+        }
+
+        $order = WC_PawaPay_Deposit::find_order( $resolved['deposit_id'] );
         if ( ! $order ) {
-            $logger->warning( '[PawaPay Webhook] No order found for deposit: ' . $deposit_id, [ 'source' => 'wc-pawapay' ] );
-            return true;
+            return [ 'ok' => true, 'http' => 200, 'reason' => 'unknown_deposit' ];
         }
 
-        WC_PawaPay_Deposit::apply( $order, $data, 'webhook' );
-        return true;
+        WC_PawaPay_Deposit::apply(
+            $order,
+            $lookup,
+            'status-lookup',
+            [ 'fail_woo_on_failed' => $gateway->get_option( 'fail_woo_on_failed_deposit' ) === 'yes' ]
+        );
+
+        return [ 'ok' => true, 'http' => 200, 'reason' => 'applied' ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function request_headers(): array {
+        $headers = [];
+        foreach ( $_SERVER as $key => $value ) {
+            if ( str_starts_with( (string) $key, 'HTTP_' ) ) {
+                $name             = strtolower( str_replace( '_', '-', substr( (string) $key, 5 ) ) );
+                $headers[ $name ] = (string) $value;
+            }
+        }
+        if ( isset( $_SERVER['CONTENT_TYPE'] ) ) {
+            $headers['content-type'] = (string) $_SERVER['CONTENT_TYPE'];
+        }
+        return $headers;
+    }
+
+    private static function gateway(): ?WC_PawaPay_Gateway {
+        if ( ! function_exists( 'WC' ) || ! WC()->payment_gateways() ) {
+            return null;
+        }
+        $gateway = WC()->payment_gateways()->payment_gateways()['pawapay'] ?? null;
+        return $gateway instanceof WC_PawaPay_Gateway ? $gateway : null;
     }
 }

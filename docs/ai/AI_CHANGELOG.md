@@ -39,6 +39,41 @@ No structural change / ADR reference
 **Follow-up**
 ...
 
+### 2026-09-19 - Verified completion (Phase 4)
+
+**Task**
+Stop unsigned callbacks from marking orders paid. Match amount/currency. Keep Woo pending on failed attempts.
+
+**Components affected**
+Completion policy, webhook verifier/processor, `Deposit::apply`, webhook, gateway settings, `tests/completion-test.php`.
+
+**Behavior changed**
+Callbacks GET `/deposits/{id}` then apply as `status-lookup`. Source `webhook` cannot complete. Duplicate COMPLETED is claimed once. FAILED does not fail the Woo order by default.
+
+**Database**
+None.
+
+**Dependencies**
+None.
+
+**Tests**
+`php tests/completion-test.php` plus existing script tests.
+
+**Security review**
+PASS WITH CONDITIONS. Non-2xx GET now 503; REST headers normalized; amount re-checked on `complete_order_only`. RFC 9421 ECDSA still not claimed.
+
+**Verifier**
+PASS WITH CONDITIONS. Poll now honors fail-order setting. Docs updated.
+
+**Architecture**
+ADR-005. Version 2.0.0.
+
+**Known limitations**
+RFC 9421 ECDSA not fully implemented. Signed mode is digest + date + header presence.
+
+**Follow-up**
+Phase 5 waiting UX.
+
 ### 2026-09-19 - Initiation lock (Phase 3)
 
 **Task**
