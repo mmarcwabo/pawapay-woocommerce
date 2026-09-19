@@ -1,71 +1,262 @@
-#pawapay-fields {
-    padding: 10px 0;
+#pawapay-fields.pawapay-panel {
+    --pawapay-purple: #6c3baa;
+    --pawapay-ink: #1c1c1e;
+    --pawapay-muted: #6b7280;
+    --pawapay-line: #ececef;
+    --pawapay-tile: #f4f4f6;
+    box-sizing: border-box;
+    margin: 4px 0 8px;
+    padding: 22px 20px 16px;
+    background: #fff;
+    border: 1px solid var(--pawapay-line);
+    border-radius: 18px;
+    color: var(--pawapay-ink);
+    font-size: 15px;
+    line-height: 1.35;
 }
 
-#pawapay_country,
-#pawapay_currency {
+#pawapay-fields.pawapay-panel *,
+#pawapay-fields.pawapay-panel *::before,
+#pawapay-fields.pawapay-panel *::after {
+    box-sizing: border-box;
+}
+
+.pawapay-panel-head {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.pawapay-kicker {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--pawapay-muted);
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.pawapay-panel-head strong,
+.pawapay-head-for strong {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+.pawapay-head-for strong {
+    color: var(--pawapay-purple);
+}
+
+.pawapay-items {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-height: 7.5em;
+    overflow: auto;
+}
+
+.pawapay-items li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--pawapay-purple);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.pawapay-item-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.pawapay-item-total {
+    flex: 0 0 auto;
+    color: var(--pawapay-ink);
+    font-weight: 600;
+}
+
+.pawapay-field {
+    margin: 0 0 18px;
+}
+
+.pawapay-field > label {
+    display: block;
+    margin: 0 0 8px;
+    color: var(--pawapay-ink);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.pawapay-amount-line {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#pawapay-amount-value,
+.pawapay-amount-line strong {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--pawapay-ink);
+}
+
+.pawapay-amount-ccy,
+.pawapay-currency-select {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--pawapay-ink);
+}
+
+.pawapay-select,
+#pawapay-fields .pawapay-select {
     width: 100%;
+    max-width: 100%;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--pawapay-line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--pawapay-ink);
+    font: inherit;
 }
 
-.pawapay-waiting {
-    margin-bottom: 1.5em;
+.pawapay-currency-select {
+    width: auto;
+    min-width: 72px;
+    height: 36px;
+    padding: 0 8px;
+    border: none;
+    background: transparent;
+}
+
+.pawapay-phone {
+    display: flex;
+    align-items: stretch;
+    min-height: 52px;
+    border: 1px solid var(--pawapay-line);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.pawapay-prefix {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    border-right: 1px solid var(--pawapay-line);
+    color: var(--pawapay-ink);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.pawapay-flag {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.pawapay-phone-input,
+#pawapay-fields .pawapay-phone-input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    height: 52px;
+    margin: 0;
+    padding: 0 14px;
+    border: 0 !important;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none !important;
+    font: inherit;
+    color: var(--pawapay-ink);
+}
+
+.pawapay-phone-input::placeholder {
+    color: #9ca3af;
 }
 
 .pawapay-mno-grid {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 8px;
-}
-
-.pawapay-mno-row {
-    margin: 0 0 1em;
-}
-
-#pawapay_currency,
-#pawapay-currency-row .input-text {
-    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
 }
 
 .pawapay-mno-card {
-    cursor: pointer;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    padding: 10px 14px;
-    text-align: center;
-    background: #fff;
-    min-width: 90px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    transition: border-color .15s, box-shadow .15s;
-    user-select: none;
-    font: inherit;
+    justify-content: center;
+    gap: 10px;
+    min-height: 104px;
+    padding: 14px 8px;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background: var(--pawapay-tile);
     color: inherit;
+    font: inherit;
+    cursor: pointer;
     appearance: none;
     -webkit-appearance: none;
     line-height: 1.2;
+    user-select: none;
+    transition: border-color .15s, background .15s, box-shadow .15s;
 }
 
 .pawapay-mno-card:hover {
-    border-color: #aaa;
+    background: #eeeef1;
 }
 
 .pawapay-mno-card.pawapay-selected {
-    border-color: #6C3BAA;
-    box-shadow: 0 0 0 1px #6C3BAA;
+    background: #fff;
+    border-color: var(--pawapay-purple);
+    box-shadow: 0 0 0 1px var(--pawapay-purple);
 }
 
 .pawapay-mno-card img {
-    height: 44px;
+    height: 36px;
     width: auto;
+    max-width: 72px;
     object-fit: contain;
     pointer-events: none;
 }
 
 .pawapay-mno-card span {
-    font-size: 12px;
-    font-weight: 600;
-    color: #333;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--pawapay-ink);
+}
+
+.pawapay-powered {
+    margin: 20px 0 0;
+    text-align: center;
+    color: var(--pawapay-muted);
+    font-size: 13px;
+}
+
+.pawapay-waiting {
+    margin-bottom: 1.5em;
+    padding: 16px 18px;
+    border: 1px solid #ececef;
+    border-radius: 14px;
+    background: #fff;
+}
+
+@media (max-width: 520px) {
+    .pawapay-panel-head {
+        grid-template-columns: 1fr;
+    }
+
+    .pawapay-mno-grid {
+        grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+    }
+
+    #pawapay-amount-value,
+    .pawapay-amount-line strong {
+        font-size: 22px;
+    }
 }

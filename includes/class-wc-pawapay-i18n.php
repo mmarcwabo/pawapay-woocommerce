@@ -48,6 +48,19 @@ class WC_PawaPay_I18n {
             'Only currencies enabled for this shop and for the selected operator.' => 'Uniquement les devises activées pour cette boutique et pour l’opérateur sélectionné.',
             'Please choose a payment currency supported by this operator.' => 'Veuillez choisir une devise de paiement prise en charge par cet opérateur.',
             'No exchange rate is available for that payment currency. Add a rate in PawaPay settings or install a currency switcher.' => 'Aucun taux de change n’est disponible pour cette devise. Ajoutez un taux dans les réglages PawaPay ou installez un sélecteur de devises.',
+            'GitHub update token' => 'Jeton GitHub pour les mises à jour',
+            'Required while the GitHub repo is private. Fine-grained PAT: Contents Read on mmarcwabo/pawapay-woocommerce. wp-config WC_PAWAPAY_GITHUB_TOKEN overrides this field. A 401 means the token is missing or rejected.' => 'Nécessaire tant que le dépôt GitHub est privé. Jeton fine-grained : Contents Read sur mmarcwabo/pawapay-woocommerce. WC_PAWAPAY_GITHUB_TOKEN dans wp-config remplace ce champ. Un 401 signifie que le jeton manque ou est refusé.',
+            'PawaPay updates need a GitHub token because the plugin repo is private. Add WC_PAWAPAY_GITHUB_TOKEN to wp-config.php (above “That’s all, stop editing”) or paste a fine-grained token with Contents: Read on mmarcwabo/pawapay-woocommerce in WooCommerce → Settings → Payments → PawaPay.' => 'Les mises à jour PawaPay exigent un jeton GitHub car le dépôt est privé. Ajoutez WC_PAWAPAY_GITHUB_TOKEN dans wp-config.php (au-dessus de « That’s all, stop editing ») ou collez un jeton fine-grained Contents: Read sur mmarcwabo/pawapay-woocommerce dans WooCommerce → Réglages → Paiements → PawaPay.',
+            'Payment to' => 'Paiement à',
+            'For' => 'Pour',
+            'Amount' => 'Montant',
+            'Phone number' => 'Numéro de téléphone',
+            'Enter your phone number' => 'Entrez votre numéro de téléphone',
+            'Operator' => 'Opérateur',
+            'Powered by PawaPay' => 'Propulsé par PawaPay',
+            'Your order' => 'Votre commande',
+            'Order %s' => 'Commande %s',
+            '%1$s × %2$s' => '%1$s × %2$s',
         ];
 
         return $map[ $text ] ?? $translation;

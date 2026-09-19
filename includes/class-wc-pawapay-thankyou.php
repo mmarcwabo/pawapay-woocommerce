@@ -19,6 +19,13 @@ class WC_PawaPay_Thankyou {
             return;
         }
 
+        wp_enqueue_style(
+            'wc-pawapay-checkout',
+            WC_PAWAPAY_PLUGIN_URL . 'assets/css/pawapay-checkout.css',
+            [],
+            WC_PAWAPAY_VERSION
+        );
+
         wp_enqueue_script(
             'wc-pawapay-thankyou',
             WC_PAWAPAY_PLUGIN_URL . 'assets/js/pawapay-thankyou.js',
@@ -38,7 +45,7 @@ class WC_PawaPay_Thankyou {
             ]
         );
 
-        echo '<div class="woocommerce-info pawapay-waiting" id="pawapay-waiting">';
+        echo '<div class="pawapay-waiting" id="pawapay-waiting">';
         echo esc_html__( 'Confirm the payment on your phone. This page updates when PawaPay confirms the deposit.', 'wc-pawapay' );
         echo '</div>';
     }

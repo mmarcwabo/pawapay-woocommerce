@@ -45,6 +45,10 @@
     }
 
     function currencyLabel( code ) {
+        var select = document.getElementById( 'pawapay_currency' );
+        if ( select && select.classList.contains( 'pawapay-currency-select' ) ) {
+            return code;
+        }
         var names = config().currencyNames || {};
         return names[ code ] ? code + ' — ' + names[ code ] : code;
     }
@@ -92,6 +96,59 @@
         if ( row ) {
             row.style.display = list.length ? '' : 'none';
         }
+        if ( select ) {
+            select.hidden = list.length < 2;
+        }
+    }
+
+    function currentCountry() {
+        var select = document.getElementById( 'pawapay_country' );
+        if ( select && select.value ) {
+            return select.value;
+        }
+        var hidden = document.querySelector( '#pawapay-fields input[name="pawapay_country"]' );
+        return hidden ? hidden.value : '';
+    }
+
+    function syncPrefix() {
+        var chip = document.getElementById( 'pawapay-prefix' );
+        if ( ! chip ) {
+            return;
+        }
+        var info = ( config().prefixes || {} )[ currentCountry() ];
+        if ( ! info ) {
+            return;
+        }
+        chip.setAttribute( 'data-prefix', info.prefix || '' );
+        var flag = document.getElementById( 'pawapay-flag' );
+        var text = document.getElementById( 'pawapay-prefix-text' );
+        if ( flag ) {
+            flag.textContent = info.flag || '';
+        }
+        if ( text ) {
+            text.textContent = info.prefix ? '+' + info.prefix : '';
+        }
+        composePhone();
+    }
+
+    function composePhone() {
+        var hidden = document.getElementById( 'pawapay_phone' );
+        var local = document.getElementById( 'pawapay_phone_local' );
+        var chip = document.getElementById( 'pawapay-prefix' );
+        if ( ! hidden ) {
+            return;
+        }
+
+        var digits = local ? String( local.value || '' ).replace( /\D+/g, '' ) : '';
+        var prefix = chip ? String( chip.getAttribute( 'data-prefix' ) || '' ) : '';
+        if ( digits && prefix && digits.indexOf( prefix ) === 0 ) {
+            hidden.value = digits;
+            return;
+        }
+        if ( digits.indexOf( '0' ) === 0 ) {
+            digits = digits.slice( 1 );
+        }
+        hidden.value = prefix && digits ? prefix + digits : digits;
     }
 
     function selectCard( card, keepCurrency ) {
@@ -150,6 +207,8 @@
             return;
         }
         filterByCountry();
+        syncPrefix();
+        composePhone();
     }
 
     function onCardActivate( event ) {
@@ -194,11 +253,22 @@
             }
             if ( event.target.id === 'pawapay_country' ) {
                 filterByCountry();
+                syncPrefix();
             }
             if ( event.target.id === 'pawapay_currency' ) {
                 storageSet( LAST_CURRENCY_KEY, event.target.value );
             }
         }, true );
+
+        document.addEventListener( 'input', function ( event ) {
+            if ( event.target && event.target.id === 'pawapay_phone_local' ) {
+                composePhone();
+            }
+        }, true );
+
+        if ( window.jQuery ) {
+            window.jQuery( 'form.checkout' ).on( 'checkout_place_order_pawapay', composePhone );
+        }
 
         document.addEventListener( 'DOMContentLoaded', restoreSelection );
 

@@ -22,31 +22,56 @@ class WC_PawaPay_Providers {
     }
 
     /**
-     * @return array<string, array{name: string, prefix: string}>
+     * @return array<string, array{name: string, prefix: string, iso2: string}>
      */
     public static function countries(): array {
         return [
-            'BEN' => [ 'name' => 'Benin', 'prefix' => '229' ],
-            'BFA' => [ 'name' => 'Burkina Faso', 'prefix' => '226' ],
-            'CMR' => [ 'name' => 'Cameroon', 'prefix' => '237' ],
-            'CIV' => [ 'name' => "Côte d'Ivoire", 'prefix' => '225' ],
-            'COD' => [ 'name' => 'DR Congo', 'prefix' => '243' ],
-            'COG' => [ 'name' => 'Republic of the Congo', 'prefix' => '242' ],
-            'ETH' => [ 'name' => 'Ethiopia', 'prefix' => '251' ],
-            'GAB' => [ 'name' => 'Gabon', 'prefix' => '241' ],
-            'GHA' => [ 'name' => 'Ghana', 'prefix' => '233' ],
-            'KEN' => [ 'name' => 'Kenya', 'prefix' => '254' ],
-            'LSO' => [ 'name' => 'Lesotho', 'prefix' => '266' ],
-            'MWI' => [ 'name' => 'Malawi', 'prefix' => '265' ],
-            'MOZ' => [ 'name' => 'Mozambique', 'prefix' => '258' ],
-            'NGA' => [ 'name' => 'Nigeria', 'prefix' => '234' ],
-            'RWA' => [ 'name' => 'Rwanda', 'prefix' => '250' ],
-            'SEN' => [ 'name' => 'Senegal', 'prefix' => '221' ],
-            'SLE' => [ 'name' => 'Sierra Leone', 'prefix' => '232' ],
-            'TZA' => [ 'name' => 'Tanzania', 'prefix' => '255' ],
-            'UGA' => [ 'name' => 'Uganda', 'prefix' => '256' ],
-            'ZMB' => [ 'name' => 'Zambia', 'prefix' => '260' ],
+            'BEN' => [ 'name' => 'Benin', 'prefix' => '229', 'iso2' => 'BJ' ],
+            'BFA' => [ 'name' => 'Burkina Faso', 'prefix' => '226', 'iso2' => 'BF' ],
+            'CMR' => [ 'name' => 'Cameroon', 'prefix' => '237', 'iso2' => 'CM' ],
+            'CIV' => [ 'name' => "Côte d'Ivoire", 'prefix' => '225', 'iso2' => 'CI' ],
+            'COD' => [ 'name' => 'DR Congo', 'prefix' => '243', 'iso2' => 'CD' ],
+            'COG' => [ 'name' => 'Republic of the Congo', 'prefix' => '242', 'iso2' => 'CG' ],
+            'ETH' => [ 'name' => 'Ethiopia', 'prefix' => '251', 'iso2' => 'ET' ],
+            'GAB' => [ 'name' => 'Gabon', 'prefix' => '241', 'iso2' => 'GA' ],
+            'GHA' => [ 'name' => 'Ghana', 'prefix' => '233', 'iso2' => 'GH' ],
+            'KEN' => [ 'name' => 'Kenya', 'prefix' => '254', 'iso2' => 'KE' ],
+            'LSO' => [ 'name' => 'Lesotho', 'prefix' => '266', 'iso2' => 'LS' ],
+            'MWI' => [ 'name' => 'Malawi', 'prefix' => '265', 'iso2' => 'MW' ],
+            'MOZ' => [ 'name' => 'Mozambique', 'prefix' => '258', 'iso2' => 'MZ' ],
+            'NGA' => [ 'name' => 'Nigeria', 'prefix' => '234', 'iso2' => 'NG' ],
+            'RWA' => [ 'name' => 'Rwanda', 'prefix' => '250', 'iso2' => 'RW' ],
+            'SEN' => [ 'name' => 'Senegal', 'prefix' => '221', 'iso2' => 'SN' ],
+            'SLE' => [ 'name' => 'Sierra Leone', 'prefix' => '232', 'iso2' => 'SL' ],
+            'TZA' => [ 'name' => 'Tanzania', 'prefix' => '255', 'iso2' => 'TZ' ],
+            'UGA' => [ 'name' => 'Uganda', 'prefix' => '256', 'iso2' => 'UG' ],
+            'ZMB' => [ 'name' => 'Zambia', 'prefix' => '260', 'iso2' => 'ZM' ],
         ];
+    }
+
+    public static function flag_emoji( string $country ): string {
+        $iso2 = strtoupper( (string) ( self::countries()[ strtoupper( $country ) ]['iso2'] ?? '' ) );
+        if ( strlen( $iso2 ) !== 2 ) {
+            return '';
+        }
+
+        return mb_chr( 0x1F1E6 + ord( $iso2[0] ) - 65, 'UTF-8' )
+            . mb_chr( 0x1F1E6 + ord( $iso2[1] ) - 65, 'UTF-8' );
+    }
+
+    public static function compose_msisdn( string $input, string $country ): string {
+        $digits = preg_replace( '/\D+/', '', $input ) ?? '';
+        $prefix = (string) ( self::countries()[ strtoupper( $country ) ]['prefix'] ?? '' );
+        if ( $digits === '' ) {
+            return '';
+        }
+        if ( $prefix !== '' && str_starts_with( $digits, $prefix ) ) {
+            return $digits;
+        }
+        if ( str_starts_with( $digits, '0' ) ) {
+            $digits = substr( $digits, 1 );
+        }
+        return $prefix . $digits;
     }
 
     /**

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0
+
+- Checkout payment box follows PawaPay hosted UI: amount, prefixed phone, operator tiles, powered-by footer.
+- Multi-item carts list every line (qty × name + line total) instead of only the first product.
+
 ## 1.1.0
 
 - Generic WooCommerce setup: API token, deposit callback, countries, and operators.

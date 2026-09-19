@@ -3,7 +3,7 @@
  * Plugin Name: PawaPay Mobile Money Gateway for WooCommerce
  * Plugin URI:  https://github.com/mmarcwabo/pawapay-woocommerce
  * Description: WooCommerce gateway for PawaPay mobile money deposits. Configure API keys, deposit callbacks, countries, and operators.
- * Version:     1.1.0
+ * Version:     1.2.0
  * Author:      Maungano
  * Author URI:  https://github.com/mmarcwabo/pawapay-woocommerce
  * License:     GPL v2 or later
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WC_PAWAPAY_VERSION', '1.1.0' );
+define( 'WC_PAWAPAY_VERSION', '1.2.0' );
 define( 'WC_PAWAPAY_PLUGIN_FILE', __FILE__ );
 define( 'WC_PAWAPAY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WC_PAWAPAY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -55,6 +55,24 @@ function wc_pawapay_init() {
 }
 
 /**
+ * Read token for the private GitHub repo. wp-config wins over the gateway setting.
+ */
+function wc_pawapay_github_token(): string {
+    $token = '';
+    if ( defined( 'WC_PAWAPAY_GITHUB_TOKEN' ) && is_string( WC_PAWAPAY_GITHUB_TOKEN ) ) {
+        $token = WC_PAWAPAY_GITHUB_TOKEN;
+    } else {
+        $settings = get_option( 'woocommerce_pawapay_settings', [] );
+        if ( is_array( $settings ) ) {
+            $token = (string) ( $settings['github_token'] ?? '' );
+        }
+    }
+
+    $token = trim( (string) apply_filters( 'woocommerce_pawapay_github_token', $token ) );
+    return $token;
+}
+
+/**
  * GitHub release checker so wp-admin can offer updates.
  */
 function wc_pawapay_init_update_checker(): void {
@@ -73,12 +91,24 @@ function wc_pawapay_init_update_checker(): void {
 
     $update_checker->setBranch( 'main' );
 
-    if ( defined( 'WC_PAWAPAY_GITHUB_TOKEN' ) && WC_PAWAPAY_GITHUB_TOKEN ) {
-        $update_checker->setAuthentication( WC_PAWAPAY_GITHUB_TOKEN );
+    $token = wc_pawapay_github_token();
+    if ( $token !== '' ) {
+        $update_checker->setAuthentication( $token );
     }
 }
 
+function wc_pawapay_missing_github_token_notice(): void {
+    if ( ! current_user_can( 'update_plugins' ) || wc_pawapay_github_token() !== '' ) {
+        return;
+    }
+
+    echo '<div class="notice notice-warning"><p>';
+    echo esc_html__( 'PawaPay updates need a GitHub token because the plugin repo is private. Add WC_PAWAPAY_GITHUB_TOKEN to wp-config.php (above “That’s all, stop editing”) or paste a fine-grained token with Contents: Read on mmarcwabo/pawapay-woocommerce in WooCommerce → Settings → Payments → PawaPay.', 'wc-pawapay' );
+    echo '</p></div>';
+}
+
 add_action( 'plugins_loaded', 'wc_pawapay_init_update_checker', 0 );
+add_action( 'admin_notices', 'wc_pawapay_missing_github_token_notice' );
 
 register_activation_hook( __FILE__, function () {
     add_rewrite_endpoint( 'pawapay-webhook', EP_ROOT );

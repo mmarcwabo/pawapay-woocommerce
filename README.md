@@ -20,11 +20,9 @@ Repo: [github.com/mmarcwabo/pawapay-woocommerce](https://github.com/mmarcwabo/pa
    Leave Checkouts / Payouts / Refunds empty unless you add those flows later.
 4. Settings → Permalinks → Save if the webhook 404s.
 
-If this GitHub repo is **private**, add a read token in `wp-config.php`:
+The official repo is **public**. WordPress can check GitHub for updates without a token. Plugins → **Check for updates** should offer the latest `Version` on `main`.
 
-```php
-define( 'WC_PAWAPAY_GITHUB_TOKEN', 'github_pat_...' );
-```
+A token is only needed if you point the checker at a private fork: `WC_PAWAPAY_GITHUB_TOKEN` in `wp-config.php`, or the GitHub update token field in the gateway settings.
 
 ## How payment completes
 
@@ -65,6 +63,11 @@ DRC examples:
 Bump `Version:` and `WC_PAWAPAY_VERSION`, push `main`, tag `vX.Y.Z`. WordPress compares the header on `main` via Plugin Update Checker.
 
 ## Changelog
+
+### 1.2.0
+
+- Checkout UI matches PawaPay hosted checkout (amount, country prefix, operator tiles).
+- Multi-item carts show a line list under **For**.
 
 ### 1.1.0
 

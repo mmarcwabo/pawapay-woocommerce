@@ -49,6 +49,13 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
         }
 
         $wc_names = function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : [];
+        $prefixes = [];
+        foreach ( WC_PawaPay_Providers::countries() as $code => $row ) {
+            $prefixes[ $code ] = [
+                'prefix' => $row['prefix'],
+                'flag'   => WC_PawaPay_Providers::flag_emoji( $code ),
+            ];
+        }
 
         wp_localize_script(
             'wc-pawapay-checkout',
@@ -58,6 +65,8 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
                 'enabledCurrencies' => $this->enabled_currencies(),
                 'providers'         => $providers,
                 'currencyNames'     => $wc_names,
+                'prefixes'          => $prefixes,
+                'formattedTotal'    => $this->formatted_checkout_total(),
             ]
         );
     }
@@ -136,6 +145,12 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
                 'label'   => __( 'Enable logging (WooCommerce → Status → Logs)', 'wc-pawapay' ),
                 'default' => 'no',
             ],
+            'github_token'       => [
+                'title'       => __( 'GitHub update token', 'wc-pawapay' ),
+                'type'        => 'password',
+                'description' => __( 'Required while the GitHub repo is private. Fine-grained PAT: Contents Read on mmarcwabo/pawapay-woocommerce. wp-config WC_PAWAPAY_GITHUB_TOKEN overrides this field. A 401 means the token is missing or rejected.', 'wc-pawapay' ),
+                'desc_tip'    => true,
+            ],
             'webhook_url'        => [
                 'title'       => __( 'Deposit callback URL', 'wc-pawapay' ),
                 'type'        => 'title',
@@ -191,17 +206,20 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
     }
 
     public function payment_fields(): void {
-        echo '<div id="pawapay-fields">';
+        echo '<div id="pawapay-fields" class="pawapay-panel">';
+        echo '<div class="pawapay-panel-head">';
+        echo '<div><span class="pawapay-kicker">' . esc_html__( 'Payment to', 'wc-pawapay' ) . '</span><strong>' . esc_html( $this->checkout_shop_name() ) . '</strong></div>';
+        echo '<div class="pawapay-head-for">';
+        echo '<span class="pawapay-kicker">' . esc_html__( 'For', 'wc-pawapay' ) . '</span>';
+        $this->render_item_list();
+        echo '</div></div>';
 
-        if ( $this->description ) {
-            echo '<p>' . esc_html( $this->description ) . '</p>';
-        }
-
+        $this->render_amount_row();
         $this->render_country_field();
         $this->render_phone_field();
         $this->render_mno_cards();
-        $this->render_currency_field();
 
+        echo '<p class="pawapay-powered">' . esc_html__( 'Powered by PawaPay', 'wc-pawapay' ) . '</p>';
         echo '</div>';
     }
 
@@ -215,28 +233,59 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
         }
 
         $catalog = WC_PawaPay_Providers::countries();
-        echo '<p class="form-row form-row-wide">';
-        echo '<label for="pawapay_country">' . esc_html__( 'Country', 'wc-pawapay' ) . ' <span class="required">*</span></label>';
-        echo '<select id="pawapay_country" name="pawapay_country" class="input-text">';
+        echo '<div class="pawapay-field">';
+        echo '<label for="pawapay_country">' . esc_html__( 'Country', 'wc-pawapay' ) . '</label>';
+        echo '<select id="pawapay_country" name="pawapay_country" class="pawapay-select">';
         foreach ( $countries as $code ) {
             $label = $catalog[ $code ]['name'] ?? $code;
             echo '<option value="' . esc_attr( $code ) . '">' . esc_html( $label ) . '</option>';
         }
-        echo '</select></p>';
+        echo '</select></div>';
+    }
+
+    private function render_amount_row(): void {
+        $mnos = $this->get_mno_list();
+        $first = $mnos ? reset( $mnos ) : null;
+        $choices = $first
+            ? WC_PawaPay_Currency::choices_for_operator( $first['code'], $this->enabled_currencies() )
+            : $this->enabled_currencies();
+        if ( ! $choices ) {
+            $choices = [ WC_PawaPay_Currency::active_currency() ];
+        }
+
+        $active  = WC_PawaPay_Currency::active_currency();
+        $current = in_array( $active, $choices, true ) ? $active : ( $choices[0] ?? $active );
+
+        echo '<div class="pawapay-field pawapay-amount-row">';
+        echo '<label for="pawapay_currency">' . esc_html__( 'Amount', 'wc-pawapay' ) . '</label>';
+        echo '<div class="pawapay-amount-line">';
+        echo '<strong id="pawapay-amount-value">' . wp_kses_post( $this->formatted_checkout_total() ) . '</strong>';
+        echo '<select id="pawapay_currency" name="pawapay_currency" class="pawapay-select pawapay-currency-select"' . ( count( $choices ) < 2 ? ' hidden' : '' ) . '>';
+        foreach ( $choices as $code ) {
+            echo '<option value="' . esc_attr( $code ) . '"' . selected( $current, $code, false ) . '>' . esc_html( $code ) . '</option>';
+        }
+        echo '</select>';
+        echo '</div></div>';
     }
 
     private function render_phone_field(): void {
-        echo '<p class="form-row form-row-wide">
-            <label for="pawapay_phone">' . esc_html__( 'Mobile money number', 'wc-pawapay' ) . ' <span class="required">*</span></label>
-            <input type="tel"
-                   id="pawapay_phone"
-                   name="pawapay_phone"
-                   placeholder="243810000000"
-                   autocomplete="tel"
-                   class="input-text"
-                   style="width:100%;" />
-            <small>' . esc_html__( 'International format without + (e.g. 243810000000)', 'wc-pawapay' ) . '</small>
-        </p>';
+        $countries = $this->enabled_countries();
+        $country   = $countries[0] ?? 'COD';
+        $catalog   = WC_PawaPay_Providers::countries();
+        $prefix    = $catalog[ $country ]['prefix'] ?? '243';
+        $flag      = WC_PawaPay_Providers::flag_emoji( $country );
+
+        echo '<div class="pawapay-field">';
+        echo '<label for="pawapay_phone_local">' . esc_html__( 'Phone number', 'wc-pawapay' ) . ' <span class="required">*</span></label>';
+        echo '<div class="pawapay-phone">';
+        echo '<span class="pawapay-prefix" id="pawapay-prefix" data-prefix="' . esc_attr( $prefix ) . '">';
+        echo '<span class="pawapay-flag" id="pawapay-flag">' . esc_html( $flag ) . '</span>';
+        echo '<span id="pawapay-prefix-text">+' . esc_html( $prefix ) . '</span>';
+        echo '</span>';
+        echo '<input type="tel" id="pawapay_phone_local" name="pawapay_phone_local" inputmode="numeric" autocomplete="tel-national" placeholder="' . esc_attr__( 'Enter your phone number', 'wc-pawapay' ) . '" class="pawapay-phone-input">';
+        echo '</div>';
+        echo '<input type="hidden" id="pawapay_phone" name="pawapay_phone" value="">';
+        echo '</div>';
     }
 
     private function render_mno_cards(): void {
@@ -247,8 +296,8 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
 
         $first = reset( $mnos );
 
-        echo '<div class="form-row form-row-wide pawapay-mno-row">';
-        echo '<label>' . esc_html__( 'Mobile money operator', 'wc-pawapay' ) . ' <span class="required">*</span></label>';
+        echo '<div class="pawapay-field pawapay-mno-row">';
+        echo '<label>' . esc_html__( 'Operator', 'wc-pawapay' ) . ' <span class="required">*</span></label>';
         echo '<input type="hidden" id="pawapay_mno" name="pawapay_mno" value="' . esc_attr( $first['code'] ) . '">';
         echo '<div class="pawapay-mno-grid">';
 
@@ -259,7 +308,7 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
             if ( ! empty( $row['logo'] ) ) {
                 echo '<img src="' . esc_url( $row['logo'] ) . '" alt="' . esc_attr( $row['label'] ) . '">';
             }
-            echo '<span>' . esc_html( $row['label'] ) . '</span>';
+            echo '<span>' . esc_html( $this->mno_display_label( $row['label'] ) ) . '</span>';
             echo '</button>';
             $is_first = false;
         }
@@ -267,36 +316,8 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
         echo '</div></div>';
     }
 
-    private function render_currency_field(): void {
-        $mnos = $this->get_mno_list();
-        if ( empty( $mnos ) ) {
-            return;
-        }
-
-        $first   = reset( $mnos );
-        $choices = WC_PawaPay_Currency::choices_for_operator( $first['code'], $this->enabled_currencies() );
-        if ( ! $choices ) {
-            $choices = $first['currencies'] ?: [ WC_PawaPay_Currency::active_currency() ];
-        }
-
-        $names   = function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : [];
-        $active  = WC_PawaPay_Currency::active_currency();
-        $current = in_array( $active, $choices, true ) ? $active : ( $choices[0] ?? '' );
-
-        echo '<p class="form-row form-row-wide" id="pawapay-currency-row">';
-        echo '<label for="pawapay_currency">' . esc_html__( 'Payment currency', 'wc-pawapay' ) . ' <span class="required">*</span></label>';
-        echo '<select id="pawapay_currency" name="pawapay_currency" class="input-text">';
-        foreach ( $choices as $code ) {
-            $label = isset( $names[ $code ] ) ? $code . ' — ' . $names[ $code ] : $code;
-            echo '<option value="' . esc_attr( $code ) . '"' . selected( $current, $code, false ) . '>' . esc_html( $label ) . '</option>';
-        }
-        echo '</select>';
-        echo '<small>' . esc_html__( 'Only currencies enabled for this shop and for the selected operator.', 'wc-pawapay' ) . '</small>';
-        echo '</p>';
-    }
-
     public function validate_fields(): bool {
-        $phone = sanitize_text_field( wp_unslash( $_POST['pawapay_phone'] ?? '' ) );
+        $phone = $this->posted_msisdn();
         $mno   = WC_PawaPay_Providers::normalize_code( sanitize_text_field( wp_unslash( $_POST['pawapay_mno'] ?? '' ) ) );
 
         if ( $phone === '' ) {
@@ -338,7 +359,7 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
 
     public function process_payment( $order_id ): array {
         $order      = wc_get_order( $order_id );
-        $phone      = sanitize_text_field( wp_unslash( $_POST['pawapay_phone'] ?? '' ) );
+        $phone      = $this->posted_msisdn();
         $mno        = WC_PawaPay_Providers::normalize_code( sanitize_text_field( wp_unslash( $_POST['pawapay_mno'] ?? '' ) ) );
         $deposit_id = WC_PawaPay_API::generate_uuid();
         $currency   = $this->resolve_currency( $order, $mno );
@@ -418,6 +439,107 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
             $this->get_option( 'sandbox' ) === 'yes',
             $this->get_option( 'debug' ) === 'yes'
         );
+    }
+
+    private function posted_msisdn(): string {
+        $posted  = (string) wp_unslash( $_POST['pawapay_phone'] ?? '' );
+        $local   = (string) wp_unslash( $_POST['pawapay_phone_local'] ?? '' );
+        $country = strtoupper( sanitize_text_field( wp_unslash( $_POST['pawapay_country'] ?? '' ) ) );
+        if ( $country === '' ) {
+            $enabled = $this->enabled_countries();
+            $country = $enabled[0] ?? '';
+        }
+
+        $from_hidden = WC_PawaPay_Providers::compose_msisdn( $posted, $country );
+        if ( $from_hidden !== '' ) {
+            return $from_hidden;
+        }
+
+        return WC_PawaPay_Providers::compose_msisdn( $local, $country );
+    }
+
+    private function checkout_shop_name(): string {
+        return wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) ?: 'Shop';
+    }
+
+    /**
+     * @return list<array{name: string, qty: float, total: float}>
+     */
+    private function checkout_lines(): array {
+        if ( function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'order-pay' ) ) {
+            $order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+            if ( $order ) {
+                $lines = [];
+                foreach ( $order->get_items() as $item ) {
+                    if ( ! $item instanceof WC_Order_Item_Product ) {
+                        continue;
+                    }
+                    $lines[] = [
+                        'name'  => wp_strip_all_tags( $item->get_name() ),
+                        'qty'   => (float) $item->get_quantity(),
+                        'total' => (float) $item->get_total(),
+                    ];
+                }
+                return $lines;
+            }
+        }
+
+        if ( ! WC()->cart || WC()->cart->is_empty() ) {
+            return [];
+        }
+
+        $lines = [];
+        foreach ( WC()->cart->get_cart() as $item ) {
+            $product = $item['data'] ?? null;
+            $name    = $product instanceof WC_Product ? $product->get_name() : '';
+            $lines[] = [
+                'name'  => wp_strip_all_tags( (string) $name ),
+                'qty'   => (float) ( $item['quantity'] ?? 1 ),
+                'total' => (float) ( $item['line_total'] ?? 0 ),
+            ];
+        }
+
+        return $lines;
+    }
+
+    private function render_item_list(): void {
+        $lines = $this->checkout_lines();
+        if ( ! $lines ) {
+            echo '<strong>' . esc_html__( 'Your order', 'wc-pawapay' ) . '</strong>';
+            return;
+        }
+
+        echo '<ul class="pawapay-items">';
+        foreach ( $lines as $line ) {
+            $qty = $line['qty'] == (int) $line['qty'] ? (string) (int) $line['qty'] : (string) $line['qty'];
+            echo '<li>';
+            echo '<span class="pawapay-item-name">' . esc_html( sprintf( __( '%1$s × %2$s', 'wc-pawapay' ), $qty, $line['name'] ) ) . '</span>';
+            echo '<span class="pawapay-item-total">' . esc_html( number_format_i18n( $line['total'], 2 ) ) . '</span>';
+            echo '</li>';
+        }
+        echo '</ul>';
+    }
+
+    private function formatted_checkout_total(): string {
+        $total = 0.0;
+        $ccy   = WC_PawaPay_Currency::active_currency();
+
+        if ( function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'order-pay' ) ) {
+            $order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+            if ( $order ) {
+                $total = (float) $order->get_total();
+                $ccy   = strtoupper( $order->get_currency() );
+            }
+        } elseif ( WC()->cart ) {
+            $total = (float) WC()->cart->get_total( 'edit' );
+        }
+
+        return number_format_i18n( $total, 2 ) . "\u{00a0}" . $ccy;
+    }
+
+    private function mno_display_label( string $label ): string {
+        $short = preg_replace( '/\s+(Money|MoMo|M-Pesa|Mpamba)$/i', '', $label );
+        return is_string( $short ) && $short !== '' ? $short : $label;
     }
 
     private function resolve_currency( WC_Order $order, string $mno ): string {
