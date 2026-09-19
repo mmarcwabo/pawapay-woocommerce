@@ -1,6 +1,6 @@
 # Payment flow
 
-Observed on plugin **1.3.0**. Live Maungano deposits completed on the 1.2.1 path; 1.3.0 adds attempt rows beside that path.
+Observed on plugin **1.4.0**. Live Maungano deposits completed on the 1.2.1 path; 1.3–1.4 add attempts, a v1 client, and initiate lock.
 
 ## Current flow (as implemented)
 
@@ -16,6 +16,7 @@ sequenceDiagram
     Woo->>G: process_payment(order_id)
     G->>G: amount = order.total (server)
     G->>G: currency = POST ∩ operator ∩ settings
+    G->>G: PaymentService lock + freeze order amount
     G->>G: overwrite _pawapay_deposit_id
     G->>G: insert attempt row (INITIATING)
     G->>P: POST /deposits
@@ -26,8 +27,11 @@ sequenceDiagram
         P-->>W: POST callback (unsigned)
         C->>W: AJAX poll GET /deposits/{id}
         W->>Woo: payment_complete()
-    else REJECTED / HTTP error
-        G->>C: checkout notice, order still unpaid
+    else timeout / connection
+        G->>G: attempt UNKNOWN, order stays pending
+        G->>C: thank-you / wait (do not pay again)
+    else REJECTED
+        G->>C: checkout notice, order still unpaid, retry allowed
     end
 ```
 

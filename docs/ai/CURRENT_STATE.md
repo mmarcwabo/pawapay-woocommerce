@@ -3,7 +3,7 @@
 > Observed, not desired. Date: 2026-09-19.
 
 ## Baseline date
-2026-09-19. Working tree **1.3.1** (attempts table + v1 client interface). Last GitHub release tag may still be **v1.2.1** until this milestone is tagged.
+2026-09-19. Working tree **1.4.0** (attempts table, v1 client, initiate lock). Last GitHub release tag may still be **v1.2.1** until this milestone is tagged.
 
 ## Repository health
 Single `main`. Composer: PHP 8.0+, Plugin Update Checker 5.x. No CI in this repo.
@@ -21,7 +21,7 @@ Only PUC in `vendor/`.
 `{prefix}pawapay_transactions` (schema v1) plus Woo order meta + notes.
 
 ## Security-sensitive surfaces
-Public webhook + REST `/wp-json/pawapay/v1/deposits`. Token in options. Poll AJAX. Order notes with full MSISDN.
+Public webhook + REST `/wp-json/pawapay/v1/deposits`. Token in options. Poll AJAX. New initiation notes mask MSISDN; `_pawapay_phone` meta still stores the full number.
 
 ## CI/CD status
 None in-repo. Updates via GitHub releases.
@@ -33,7 +33,7 @@ Maungano production has completed **live** PawaPay deposits (operator confirmed 
 `README.md` + `CHANGELOG.md` + this `docs/architecture/*` set. Older `docs/ai/*` placeholders filled from this audit.
 
 ## Major known risks
-Unsigned webhook can complete an order if `depositId` is guessed/leaked. Retry overwrites deposit meta. Failed deposit marks Woo `failed`.
+Unsigned webhook can complete an order if `depositId` is guessed/leaked. Failed deposit still marks Woo `failed` via `Deposit::apply`.
 
 ## Unknowns requiring confirmation
 Blocks checkout compatibility. Accuracy of MSISDN→MNO on DRC prefixes. Whether live Wordfence allows PawaPay production callback IPs.

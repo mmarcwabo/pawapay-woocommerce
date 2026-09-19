@@ -67,6 +67,10 @@ Bump `Version:` and `WC_PAWAPAY_VERSION`, push `main`, tag `vX.Y.Z`. WordPress c
 
 ## Changelog
 
+### 1.4.0
+
+- Checkout initiation is locked and idempotent. Timeouts stay unconfirmed; retries do not create a second live deposit.
+
 ### 1.3.1
 
 - PawaPay HTTP is behind `WC_PawaPay_Client`. Live deposits stay on v1 `/deposits`.
@@ -118,6 +122,7 @@ php tests/deposit-status-test.php
 php tests/currency-test.php
 php tests/attempt-test.php
 php tests/client-test.php
+php tests/initiate-test.php
 ```
 
 Requires PHP 8.0+ and WooCommerce.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.0
+
+- Initiate through `WC_PawaPay_Payment_Service`: amount and currency come from the WooCommerce order, not from JavaScript.
+- A short lock plus attempt reuse stops a double-click from creating a second live PawaPay deposit.
+- If PawaPay times out, the attempt is `UNKNOWN` and the order stays pending. The customer is not told the payment failed.
+- Place order disables after the first PawaPay submit. Order notes mask the phone number.
+
 ## 1.3.1
 
 - Introduce `WC_PawaPay_Client` so checkout and poll depend on a contract, not a URL version.

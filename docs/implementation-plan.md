@@ -38,7 +38,11 @@ No runtime change.
 
 ## Phase 3 — Initiation + idempotency
 
+**Status:** done 2026-09-19 (plugin **1.4.0**). Completion rules still 1.2.1.
+
 **Goal:** Thin gateway; lock; freeze amounts; no duplicate live deposits.
+
+**New:** `includes/class-wc-pawapay-payment-service.php`, `class-wc-pawapay-initiation-policy.php`, `class-wc-pawapay-initiation-lock.php`.
 
 **Touch:** `process_payment` → `PaymentService::initiate`. Frontend disable Place order after first submit.
 

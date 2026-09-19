@@ -39,6 +39,41 @@ No structural change / ADR reference
 **Follow-up**
 ...
 
+### 2026-09-19 - Initiation lock (Phase 3)
+
+**Task**
+Prevent duplicate live deposits and freeze amounts on the server.
+
+**Components affected**
+Payment service, initiation policy/lock, `process_payment`, checkout JS, `tests/initiate-test.php`.
+
+**Behavior changed**
+Double submit reuses an active attempt. Timeout is UNKNOWN and Woo stays pending. Order notes mask the phone.
+
+**Database**
+None (uses existing attempts table + `wc_pawapay_init_lock_{order_id}` option).
+
+**Dependencies**
+None.
+
+**Tests**
+`php tests/initiate-test.php` plus existing script tests.
+
+**Security review**
+PASS WITH CONDITIONS. Unsigned webhook can still clear an active attempt (Phase 4). Added refuse-on-COMPLETED, empty currency fail-closed, ambiguous 4xx → UNKNOWN.
+
+**Verifier**
+PASS.
+
+**Architecture**
+ADR-004.
+
+**Known limitations**
+Cannot start a second number while an attempt is still active. Unsigned webhook completion unchanged.
+
+**Follow-up**
+Phase 4 verified callbacks + state machine.
+
 ### 2026-09-19 - PawaPay client interface (Phase 2)
 
 **Task**

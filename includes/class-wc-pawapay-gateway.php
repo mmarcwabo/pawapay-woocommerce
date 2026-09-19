@@ -360,131 +360,82 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
     }
 
     public function process_payment( $order_id ): array {
-        $order      = wc_get_order( $order_id );
-        $phone      = $this->posted_msisdn();
-        $mno        = WC_PawaPay_Providers::normalize_code( sanitize_text_field( wp_unslash( $_POST['pawapay_mno'] ?? '' ) ) );
-        $deposit_id = WC_PawaPay_API::generate_uuid();
-        $currency   = $this->resolve_currency( $order, $mno );
-        $converted  = $this->convert_order_amount( $order, $currency );
-        if ( $converted === null ) {
-            wc_add_notice( __( 'No exchange rate is available for that payment currency. Add a rate in PawaPay settings or install a currency switcher.', 'wc-pawapay' ), 'error' );
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) {
+            wc_add_notice( __( 'Order not found.', 'wc-pawapay' ), 'error' );
             return [ 'result' => 'failure' ];
         }
-        $amount = $this->format_amount( $converted, $currency, $mno );
-
-        $metadata = [
-            'orderId'    => (string) $order_id,
-            'customerId' => (string) $order->get_customer_id(),
-            'site'       => home_url(),
-        ];
-
-        $order->update_meta_data( '_pawapay_deposit_id', $deposit_id );
-        $order->update_meta_data( '_pawapay_phone', $phone );
-        $order->update_meta_data( '_pawapay_mno', $mno );
-        $order->update_meta_data( '_pawapay_currency', $currency );
-        $order->update_meta_data( '_pawapay_amount', $amount );
-        $order->save();
-
-        $this->record_attempt(
-            $order,
-            $deposit_id,
-            $phone,
-            $mno,
-            $currency,
-            $amount,
-            $converted,
-            WC_PawaPay_Attempt::STATUS_INITIATING
-        );
-
-        $response = $this->get_api()->initiate_deposit(
-            $deposit_id,
-            $amount,
-            $currency,
-            $mno,
-            $phone,
-            'Order ' . $order_id,
-            $metadata
-        );
-
-        $status = $response['status'] ?? null;
-
-        if ( isset( $response['error'] ) || ( $response['_http_code'] ?? 0 ) >= 500 ) {
-            $msg = $response['error'] ?? ( $response['errorMessage'] ?? ( $response['message'] ?? 'PawaPay API error.' ) );
-            WC_PawaPay_Attempt_Repository::instance()->mark_status( $deposit_id, WC_PawaPay_Attempt::STATUS_UNKNOWN, [
-                'failure_code'    => 'CONNECTION',
-                'failure_message' => is_string( $msg ) ? $msg : 'PawaPay API error.',
-            ] );
-            wc_add_notice( __( 'Payment error: ', 'wc-pawapay' ) . esc_html( $msg ), 'error' );
-            $order->add_order_note( 'PawaPay error: ' . $msg );
+        if ( method_exists( $order, 'needs_payment' ) && ! $order->needs_payment() ) {
+            wc_add_notice( __( 'This order is already paid. Do not send another payment.', 'wc-pawapay' ), 'error' );
             return [ 'result' => 'failure' ];
         }
 
-        if ( $status === 'ACCEPTED' ) {
-            WC_PawaPay_Attempt_Repository::instance()->mark_status( $deposit_id, WC_PawaPay_Attempt::STATUS_ACCEPTED );
-            $order->update_status( 'pending', __( 'Waiting for mobile money confirmation via PawaPay.', 'wc-pawapay' ) );
-            $order->add_order_note( sprintf(
-                'PawaPay deposit initiated. Deposit ID: %s | Phone: %s | MNO: %s | Amount: %s %s',
-                $deposit_id,
-                $phone,
+        $mno    = WC_PawaPay_Providers::normalize_code( sanitize_text_field( wp_unslash( $_POST['pawapay_mno'] ?? '' ) ) );
+        $result = $this->payment_service()->initiate(
+            new WC_PawaPay_Initiation_Command(
+                (int) $order->get_id(),
+                strtoupper( $order->get_currency() ),
+                (float) $order->get_total(),
+                $this->posted_msisdn(),
                 $mno,
-                $amount,
-                $currency
-            ) );
-            WC()->cart->empty_cart();
+                strtoupper( sanitize_text_field( wp_unslash( $_POST['pawapay_currency'] ?? '' ) ) ),
+                array_column( $this->get_mno_list(), 'code' ),
+                WC_PawaPay_Currency::choices_for_operator( $mno, $this->enabled_currencies() ),
+                (int) $order->get_customer_id(),
+                home_url(),
+                defined( 'WC_PAWAPAY_VERSION' ) ? WC_PAWAPAY_VERSION : ''
+            )
+        );
 
+        if ( $result->attempt ) {
+            $this->write_legacy_meta( $order, $result->attempt, $result->phone );
+            if ( $result->note !== '' ) {
+                $order->add_order_note( $result->note );
+            }
+            if ( $result->set_pending ) {
+                $order->update_status( 'pending', __( 'Waiting for mobile money confirmation via PawaPay.', 'wc-pawapay' ) );
+            }
+            $order->save();
+        }
+
+        if ( $result->notice !== '' ) {
+            wc_add_notice( esc_html( __( $result->notice, 'wc-pawapay' ) ), $result->notice_type );
+        }
+
+        if ( $result->empty_cart && WC()->cart ) {
+            WC()->cart->empty_cart();
+        }
+
+        if ( $result->woo_result === 'success' ) {
             return [
                 'result'   => 'success',
                 'redirect' => $this->get_return_url( $order ),
             ];
         }
 
-        $reject_code = $response['rejectionReason']['rejectionCode'] ?? '';
-        $reject_msg  = $response['rejectionReason']['rejectionMessage'] ?? ( $response['message'] ?? 'Payment rejected.' );
-        $notice      = trim( $reject_code . ( $reject_msg ? ' — ' . $reject_msg : '' ) );
-        WC_PawaPay_Attempt_Repository::instance()->mark_status( $deposit_id, WC_PawaPay_Attempt::STATUS_FAILED, [
-            'failure_code'    => (string) $reject_code,
-            'failure_message' => (string) $reject_msg,
-        ] );
-        wc_add_notice( __( 'Payment declined: ', 'wc-pawapay' ) . esc_html( $notice ), 'error' );
-        $order->add_order_note( 'PawaPay rejected: ' . $notice );
-
         return [ 'result' => 'failure' ];
     }
 
-    /**
-     * Dual-write a new attempt. 1.x order meta remains the latest-deposit pointer.
-     * Insert failure must not block checkout.
-     */
-    private function record_attempt(
-        WC_Order $order,
-        string $deposit_id,
-        string $phone,
-        string $mno,
-        string $currency,
-        string $amount,
-        float $converted,
-        string $status
-    ): void {
-        $order_total    = (float) $order->get_total();
-        $order_currency = strtoupper( $order->get_currency() );
-        $exchange_rate  = ( $order_currency === $currency || $order_total <= 0.0 )
-            ? '1'
-            : WC_PawaPay_Attempt::format_decimal( $converted / $order_total );
+    public function payment_service(): WC_PawaPay_Payment_Service {
+        return new WC_PawaPay_Payment_Service(
+            WC_PawaPay_Attempt_Repository::instance(),
+            $this->get_api(),
+            new WC_PawaPay_Initiation_Lock(),
+            function ( float $amount, string $from, string $to ): ?float {
+                return WC_PawaPay_Currency::convert( $amount, $from, $to, $this->manual_rates() );
+            },
+            function ( float $converted, string $currency, string $mno ): string {
+                return $this->format_amount( $converted, $currency, $mno );
+            }
+        );
+    }
 
-        $attempt = WC_PawaPay_Attempt::create( [
-            'order_id'         => (int) $order->get_id(),
-            'deposit_id'       => $deposit_id,
-            'provider'         => $mno,
-            'msisdn'           => $phone,
-            'order_currency'   => $order_currency,
-            'order_amount'     => (string) $order->get_total(),
-            'payment_currency' => $currency,
-            'payment_amount'   => $amount,
-            'exchange_rate'    => $exchange_rate,
-            'status'           => $status,
-        ] );
-
-        WC_PawaPay_Attempt_Repository::instance()->insert( $attempt );
+    private function write_legacy_meta( WC_Order $order, WC_PawaPay_Attempt $attempt, string $phone ): void {
+        $order->update_meta_data( '_pawapay_deposit_id', $attempt->deposit_id() );
+        $order->update_meta_data( '_pawapay_phone', $phone );
+        $order->update_meta_data( '_pawapay_mno', $attempt->provider() );
+        $order->update_meta_data( '_pawapay_currency', $attempt->payment_currency() );
+        $order->update_meta_data( '_pawapay_amount', $attempt->payment_amount() );
     }
 
     public function process_refund( $order_id, $amount = null, $reason = '' ): bool|\WP_Error {

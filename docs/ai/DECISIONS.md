@@ -65,3 +65,25 @@ None for merchants. `get_api()` still returns `WC_PawaPay_API`.
 
 **Date**
 2026-09-19
+
+### ADR-004 - Initiate lock and reuse before a second live deposit
+
+**Status:** Accepted.
+
+**Context**
+Double-click, refresh, and timeout retries could `POST /deposits` twice for one Woo order.
+
+**Decision**
+`WC_PawaPay_Payment_Service` freezes amount/currency from the order, acquires a 90s lock during the POST, reuses an active attempt with the same phone/provider/amount, and blocks a new deposit while another attempt is still active. Timeout/connection → attempt `UNKNOWN`, Woo `success` + pending, no second POST for that attempt.
+
+**Alternatives considered**
+Fail the Woo order on timeout — rejected; the customer may already have been debited.
+
+**Consequences**
+Plugin 1.4.0. Changing phone while an attempt is ACCEPTED/UNKNOWN requires waiting (Phase 5 “try another number”).
+
+**Migration / rollback impact**
+None. 1.x meta still written.
+
+**Date**
+2026-09-19

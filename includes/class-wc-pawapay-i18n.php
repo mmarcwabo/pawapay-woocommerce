@@ -64,6 +64,14 @@ class WC_PawaPay_I18n {
             'Copy one of these URLs into PawaPay Dashboard → Callback URLs → Deposits only:' => 'Copiez une de ces URL dans PawaPay Dashboard → Callback URLs → Deposits uniquement :',
             'Use the REST URL if the pretty permalink 404s.' => 'Utilisez l’URL REST si le permilien renvoie 404.',
             'Still waiting for PawaPay. Keep this page open or check the order later — confirmation can also arrive by webhook.' => 'Toujours en attente de PawaPay. Laissez cette page ouverte ou consultez la commande plus tard — la confirmation peut aussi arriver par webhook.',
+            'Please check the Mobile Money number and try again.' => 'Vérifiez le numéro Mobile Money et réessayez.',
+            'A payment request is already in progress for this order. Please wait for confirmation. Do not pay again.' => 'Une demande de paiement est déjà en cours pour cette commande. Attendez la confirmation. Ne payez pas une seconde fois.',
+            'A payment request is already starting. Please wait a moment.' => 'Une demande de paiement démarre déjà. Patientez un instant.',
+            'We sent a payment request and are waiting for confirmation. Do not pay again.' => 'Nous avons envoyé une demande de paiement et attendons la confirmation. Ne payez pas une seconde fois.',
+            'This payment is already in progress. Waiting for confirmation.' => 'Ce paiement est déjà en cours. En attente de confirmation.',
+            'Could not start this payment. Please try again.' => 'Impossible de démarrer ce paiement. Réessayez.',
+            'Order not found.' => 'Commande introuvable.',
+            'This order is already paid. Do not send another payment.' => 'Cette commande est déjà payée. N’envoyez pas un autre paiement.',
         ];
 
         return $map[ $text ] ?? $translation;

@@ -202,6 +202,27 @@
         fillCurrencySelect( parseCurrencies( selected ), storageGet( LAST_CURRENCY_KEY ) );
     }
 
+    function isPawapaySelected() {
+        var selected = document.querySelector( 'input[name="payment_method"]:checked' );
+        return ! selected || selected.value === 'pawapay';
+    }
+
+    function disablePlaceOrder() {
+        document.querySelectorAll( '#place_order, form.checkout button[type="submit"], form#order_review button[type="submit"]' ).forEach( function ( btn ) {
+            btn.disabled = true;
+            btn.setAttribute( 'aria-busy', 'true' );
+            btn.classList.add( 'pawapay-paying' );
+        } );
+    }
+
+    function enablePlaceOrder() {
+        document.querySelectorAll( '#place_order, .pawapay-paying' ).forEach( function ( btn ) {
+            btn.disabled = false;
+            btn.removeAttribute( 'aria-busy' );
+            btn.classList.remove( 'pawapay-paying' );
+        } );
+    }
+
     function restoreSelection() {
         if ( ! document.getElementById( 'pawapay_mno' ) ) {
             return;
@@ -267,7 +288,22 @@
         }, true );
 
         if ( window.jQuery ) {
-            window.jQuery( 'form.checkout' ).on( 'checkout_place_order_pawapay', composePhone );
+            window.jQuery( 'form.checkout' ).on( 'checkout_place_order_pawapay', function () {
+                composePhone();
+                disablePlaceOrder();
+                return true;
+            } );
+            window.jQuery( document.body ).on( 'checkout_error', enablePlaceOrder );
+            window.jQuery( 'form#order_review' ).on( 'submit', function () {
+                if ( ! isPawapaySelected() ) {
+                    return;
+                }
+                if ( ! document.getElementById( 'pawapay_mno' ) ) {
+                    return;
+                }
+                composePhone();
+                disablePlaceOrder();
+            } );
         }
 
         document.addEventListener( 'DOMContentLoaded', restoreSelection );

@@ -10,7 +10,7 @@
 ### TD-002 - One deposit id per order
 - Evidence: `process_payment` still overwrites `_pawapay_deposit_id` (1.x pointer). History is now in `{prefix}pawapay_transactions`.
 - Impact: Latest-meta lookup can miss an older live deposit unless the attempts table is queried (webhook/poll `find_order` does that from 1.3.0).
-- Status: Mitigated. Remaining: initiate lock (Phase 3).
+- Status: Mitigated. Initiate lock and reuse landed in 1.4.0. Latest-meta pointer still overwritten for 1.x lookup.
 
 ## P1 - High
 
@@ -25,8 +25,8 @@
 - Status: Open. Target: Phase 4.
 
 ### TD-005 - Full MSISDN in order notes
-- Evidence: `process_payment` note includes `$phone`.
-- Status: Open. Target: Phase 3/9.
+- Evidence: New initiation notes use `masked_msisdn`. `_pawapay_phone` meta still stores the full number for 1.x compatibility.
+- Status: Mitigated. Remaining: stop writing full MSISDN meta (Phase 9).
 
 ## P2 - Medium
 

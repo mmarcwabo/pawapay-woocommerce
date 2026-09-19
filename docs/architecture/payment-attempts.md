@@ -1,6 +1,6 @@
 # Payment attempts
 
-## Current storage (1.3.0)
+## Current storage (1.4.0)
 
 New checkouts **dual-write**: a row in `{prefix}pawapay_transactions` plus the 1.x order meta below (latest deposit still overwrites meta, never the table).
 
