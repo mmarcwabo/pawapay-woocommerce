@@ -49,6 +49,10 @@ class WC_PawaPay_Fake_Client implements WC_PawaPay_Client {
     public function check_deposit_status( string $deposit_id ): array {
         return [ 'status' => 'ACCEPTED', '_http_code' => 200 ];
     }
+
+    public function get_active_configuration(): array {
+        return [ 'error' => 'not used' ];
+    }
 }
 
 function pawapay_command( array $over = [] ): WC_PawaPay_Initiation_Command {

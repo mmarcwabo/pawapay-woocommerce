@@ -3,7 +3,7 @@
 > Observed, not desired. Date: 2026-09-19.
 
 ## Baseline date
-2026-09-19. Working tree **2.2.0** (attempts, v1 client, initiate lock, GET-before-complete, waiting UX, Action Scheduler reconciliation). Last GitHub release tag may still be **v1.2.1** until this milestone is tagged.
+2026-09-19. Working tree **2.3.0**. Last GitHub release tag may still be **v1.2.1** until this milestone is tagged.
 
 ## Repository health
 Single `main`. Composer: PHP 8.0+, Plugin Update Checker 5.x. No CI in this repo.

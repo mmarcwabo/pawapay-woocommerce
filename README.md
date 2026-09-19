@@ -19,7 +19,7 @@ Repo: [github.com/mmarcwabo/pawapay-woocommerce](https://github.com/mmarcwabo/pa
    `https://YOUR-SITE/pawapay-webhook/`
    or `https://YOUR-SITE/wp-json/pawapay/v1/deposits` if the pretty permalink 404s.
    Leave Checkouts / Payouts / Refunds empty unless you add those flows later.
-4. Settings → Permalinks → Save if the webhook 404s. Pending orders also have **Check PawaPay status** under order actions.
+4. Settings → Permalinks → Save if the webhook 404s. WooCommerce → **PawaPay attempts** lists deposits. Orders also have a PawaPay attempts box and **Check PawaPay status**.
 
 The official repo is **public**. WordPress can check GitHub for updates without a token. Plugins → **Check for updates** should offer the latest `Version` on `main`.
 
@@ -70,6 +70,10 @@ DRC examples:
 Bump `Version:` and `WC_PAWAPAY_VERSION`, push `main`, tag `vX.Y.Z`. WordPress compares the header on `main` via Plugin Update Checker.
 
 ## Changelog
+
+### 2.3.0
+
+- Admin attempts list (masked phone). Cached `/active-conf`. Cautious DRC operator hint; customer can override.
 
 ### 2.2.0
 
@@ -142,6 +146,8 @@ php tests/initiate-test.php
 php tests/completion-test.php
 php tests/poll-test.php
 php tests/reconcile-test.php
+php tests/admin-test.php
+php tests/catalog-test.php
 ```
 
 Requires PHP 8.0+ and WooCommerce.

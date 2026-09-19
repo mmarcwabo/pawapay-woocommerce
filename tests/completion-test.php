@@ -47,6 +47,10 @@ class WC_PawaPay_Status_Fake implements WC_PawaPay_Client {
         $this->status_calls++;
         return array_shift( $this->queue ) ?? [ 'status' => 'ACCEPTED', 'depositId' => $deposit_id, '_http_code' => 200 ];
     }
+
+    public function get_active_configuration(): array {
+        return [ 'error' => 'not used' ];
+    }
 }
 
 $base = [

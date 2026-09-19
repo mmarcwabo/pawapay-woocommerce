@@ -21,7 +21,7 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
 
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_checkout_assets' ] );
-        add_filter( 'woocommerce_order_actions', [ $this, 'order_actions' ] );
+        add_filter( 'woocommerce_order_actions', [ $this, 'order_actions' ], 10, 2 );
         add_action( 'woocommerce_order_action_pawapay_sync', [ $this, 'sync_order_from_action' ] );
     }
 
@@ -69,6 +69,7 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
                 'currencyNames'     => $wc_names,
                 'prefixes'          => $prefixes,
                 'formattedTotal'    => $this->formatted_checkout_total(),
+                'operatorHints'     => WC_PawaPay_Catalog_Policy::hints_for( array_column( $this->get_mno_list(), 'code' ) ),
             ]
         );
     }
@@ -459,18 +460,31 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
      * @param array<string, string> $actions
      * @return array<string, string>
      */
-    public function order_actions( array $actions ): array {
-        global $theorder;
-        $order = $theorder instanceof WC_Order ? $theorder : null;
-        if ( $order && $order->get_payment_method() === $this->id && $order->get_meta( '_pawapay_deposit_id' ) ) {
+    /**
+     * @param array<string, string> $actions
+     * @return array<string, string>
+     */
+    public function order_actions( array $actions, $order = null ): array {
+        if ( ! $order instanceof WC_Order ) {
+            global $theorder;
+            $order = $theorder instanceof WC_Order ? $theorder : null;
+        }
+        if ( ! $order instanceof WC_Order ) {
+            return $actions;
+        }
+        if ( $order->get_payment_method() === $this->id && $order->get_meta( '_pawapay_deposit_id' ) ) {
             $actions['pawapay_sync'] = __( 'Check PawaPay status', 'wc-pawapay' );
         }
         return $actions;
     }
 
     public function sync_order_from_action( WC_Order $order ): void {
-        WC_PawaPay_Deposit::sync_from_api(
+        $attempts = WC_PawaPay_Attempt_Repository::instance()->find_for_order( (int) $order->get_id() );
+        $latest   = $attempts ? $attempts[ array_key_last( $attempts ) ] : null;
+        $deposit  = $latest ? $latest->deposit_id() : (string) $order->get_meta( '_pawapay_deposit_id' );
+        WC_PawaPay_Deposit::sync_deposit(
             $order,
+            $deposit,
             $this->get_api(),
             'admin',
             [ 'fail_woo_on_failed' => $this->get_option( 'fail_woo_on_failed_deposit' ) === 'yes' ]
@@ -676,7 +690,7 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
         $selected  = array_map( [ 'WC_PawaPay_Providers', 'normalize_code' ], $selected );
         $countries = array_map( 'strtoupper', $countries );
 
-        $list = [];
+        $catalog = [];
         foreach ( WC_PawaPay_Providers::all() as $provider ) {
             if ( $selected && ! in_array( $provider['code'], $selected, true ) ) {
                 continue;
@@ -684,9 +698,10 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
             if ( $countries && ! in_array( $provider['country'], $countries, true ) ) {
                 continue;
             }
-            $list[] = $this->mno_row( $provider['code'], $provider['label'], $provider['country'] );
+            $catalog[] = $this->mno_row( $provider['code'], $provider['label'], $provider['country'] );
         }
 
+        $extras = [];
         foreach ( explode( "\n", (string) $this->get_option( 'extra_mnos', '' ) ) as $line ) {
             $line = trim( $line );
             if ( ! str_contains( $line, '|' ) ) {
@@ -695,8 +710,23 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
             [ $label, $code ] = explode( '|', $line, 2 );
             $code             = WC_PawaPay_Providers::normalize_code( $code );
             $provider         = WC_PawaPay_Providers::find( $code );
-            $list[]           = $this->mno_row( $code, trim( $label ), $provider['country'] ?? '' );
+            $extras[]         = $this->mno_row( $code, trim( $label ), $provider['country'] ?? '' );
         }
+
+        $codes = array_column( $catalog, 'code' );
+        $live  = WC_PawaPay_Catalog::live_codes(
+            $this->get_api(),
+            $this->get_option( 'sandbox' ) === 'yes' ? 'sandbox' : 'live'
+        );
+        $keep  = WC_PawaPay_Catalog_Policy::merge_enabled( $codes, $live );
+        if ( $keep !== $codes ) {
+            $catalog = array_values( array_filter(
+                $catalog,
+                static fn( array $row ) => in_array( $row['code'], $keep, true )
+            ) );
+        }
+
+        $list = array_merge( $catalog, $extras );
 
         // Legacy textarea still used if nothing else is configured.
         if ( ! $list ) {

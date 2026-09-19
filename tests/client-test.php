@@ -21,6 +21,8 @@ function pawapay_assert( $ok, $message ) {
 pawapay_assert( is_subclass_of( 'WC_PawaPay_API', 'WC_PawaPay_Client' ), 'v1 client implements interface' );
 pawapay_assert( WC_PawaPay_API::API_VERSION === 'v1', 'declared version is v1' );
 pawapay_assert( WC_PawaPay_API::deposit_path() === '/deposits', 'v1 deposit path' );
+pawapay_assert( WC_PawaPay_API::active_conf_path() === '/active-conf', 'v1 active-conf path' );
+pawapay_assert( ! str_contains( WC_PawaPay_API::active_conf_path(), '/v2/' ), 'active-conf is not v2' );
 pawapay_assert( ! str_contains( WC_PawaPay_API::deposit_path(), '/v2/' ), 'deposit path is not v2' );
 pawapay_assert( WC_PawaPay_API::deposit_status_path( 'abc-123' ) === '/deposits/abc-123', 'v1 status path' );
 pawapay_assert( ! str_contains( WC_PawaPay_API::deposit_status_path( 'abc-123' ), '/v2/' ), 'status path is not v2' );

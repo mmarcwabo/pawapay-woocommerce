@@ -127,6 +127,78 @@ class WC_PawaPay_Attempt_Repository {
     }
 
     /**
+     * @return list<WC_PawaPay_Attempt>
+     */
+    public function find_recent( int $limit = 20, int $offset = 0, string $status = '' ): array {
+        $limit  = max( 1, $limit );
+        $offset = max( 0, $offset );
+        $status = $status !== '' ? WC_PawaPay_Attempt::normalize_status( $status ) : '';
+
+        if ( $this->use_memory ) {
+            $found = array_values( $this->memory );
+            if ( $status !== '' ) {
+                $found = array_values( array_filter(
+                    $found,
+                    static fn( WC_PawaPay_Attempt $attempt ) => $attempt->status() === $status
+                ) );
+            }
+            usort( $found, static fn( WC_PawaPay_Attempt $a, WC_PawaPay_Attempt $b ) => $b->id() <=> $a->id() );
+            return array_slice( $found, $offset, $limit );
+        }
+
+        global $wpdb;
+        if ( $status !== '' ) {
+            $rows = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT * FROM {$this->table()} WHERE status = %s ORDER BY id DESC LIMIT %d OFFSET %d",
+                    $status,
+                    $limit,
+                    $offset
+                ),
+                ARRAY_A
+            );
+        } else {
+            $rows = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT * FROM {$this->table()} ORDER BY id DESC LIMIT %d OFFSET %d",
+                    $limit,
+                    $offset
+                ),
+                ARRAY_A
+            );
+        }
+
+        if ( ! is_array( $rows ) ) {
+            return [];
+        }
+
+        return array_map( [ 'WC_PawaPay_Attempt', 'from_row' ], $rows );
+    }
+
+    public function count_all( string $status = '' ): int {
+        $status = $status !== '' ? WC_PawaPay_Attempt::normalize_status( $status ) : '';
+
+        if ( $this->use_memory ) {
+            if ( $status === '' ) {
+                return count( $this->memory );
+            }
+            return count( array_filter(
+                $this->memory,
+                static fn( WC_PawaPay_Attempt $attempt ) => $attempt->status() === $status
+            ) );
+        }
+
+        global $wpdb;
+        if ( $status !== '' ) {
+            return (int) $wpdb->get_var(
+                $wpdb->prepare( "SELECT COUNT(*) FROM {$this->table()} WHERE status = %s", $status )
+            );
+        }
+
+        return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->table()}" );
+    }
+
+    /**
      * Active-window lookup for reconciliation. Oldest-checked first by updated_at.
      *
      * @param list<string> $statuses

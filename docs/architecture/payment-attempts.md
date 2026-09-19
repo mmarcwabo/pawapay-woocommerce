@@ -17,7 +17,7 @@ Old orders keep meta only until the first webhook/poll lookup backfills one row.
 | `_pawapay_deposited_amount` | From last COMPLETED payload |
 | `_pawapay_amount_discrepancy` | `yes` if requested ≠ deposited |
 
-`find_order()` looks up `{prefix}pawapay_transactions` by `deposit_id` first, then `_pawapay_deposit_id` meta, then backfills one row from that meta. A second `process_payment` still overwrites the **latest** meta pointer; earlier rows stay in the table. Thank-you poll / admin “Check PawaPay status” still read the latest meta id. Reconciliation GETs each due **attempt** deposit id.
+`find_order()` looks up `{prefix}pawapay_transactions` by `deposit_id` first, then `_pawapay_deposit_id` meta, then backfills one row from that meta. A second `process_payment` still overwrites the **latest** meta pointer; earlier rows stay in the table. Thank-you poll still reads the latest meta id. The admin attempts table and metabox GET a chosen attempt id. Reconciliation GETs each due **attempt** deposit id.
 
 ## Target model
 

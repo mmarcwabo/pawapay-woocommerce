@@ -3,7 +3,7 @@
  * Plugin Name: PawaPay Mobile Money Gateway for WooCommerce
  * Plugin URI:  https://github.com/mmarcwabo/pawapay-woocommerce
  * Description: WooCommerce gateway for PawaPay mobile money deposits. Configure API keys, deposit callbacks, countries, and operators.
- * Version:     2.2.0
+ * Version:     2.3.0
  * Author:      Maungano
  * Author URI:  https://github.com/mmarcwabo/pawapay-woocommerce
  * License:     GPL v2 or later
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WC_PAWAPAY_VERSION', '2.2.0' );
+define( 'WC_PAWAPAY_VERSION', '2.3.0' );
 define( 'WC_PAWAPAY_PLUGIN_FILE', __FILE__ );
 define( 'WC_PAWAPAY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WC_PAWAPAY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -44,6 +44,8 @@ function wc_pawapay_init() {
     wc_pawapay_load_storage();
 
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-providers.php';
+    require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-catalog-policy.php';
+    require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-catalog.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-currency.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-client.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-api.php';
@@ -60,11 +62,14 @@ function wc_pawapay_init() {
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-gateway.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-webhook.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-thankyou.php';
+    require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-admin-attempt-view.php';
+    require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-admin.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-i18n.php';
 
     WC_PawaPay_I18n::load();
     WC_PawaPay_Thankyou::init();
     WC_PawaPay_Reconciler::init();
+    WC_PawaPay_Admin::init();
 
     add_filter( 'woocommerce_payment_gateways', function ( $gateways ) {
         $gateways[] = 'WC_PawaPay_Gateway';

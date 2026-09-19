@@ -7,7 +7,7 @@ PawaPay Mobile Money Gateway for WooCommerce (`pawapay-woocommerce`).
 Generic Woo gateway: API token, callback, countries, operators, charge currencies.
 
 ## Status
-Production (Maungano live deposits confirmed 2026-09-19). Version 2.2.0 (background reconciliation).
+Production (Maungano live deposits confirmed 2026-09-19). Version 2.3.0 (admin attempts + cached /active-conf).
 
 ## Primary users
 Woo merchants (Maungano first); shoppers at checkout.

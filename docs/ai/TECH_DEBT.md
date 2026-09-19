@@ -33,7 +33,7 @@
 - Status: Mitigated. Residual: no job if Action Scheduler is missing; admin still needed for very old rows.
 
 ### TD-007 - Gateway god class
-- TD-008 - Static provider catalog (`/active-conf` unused)
+- TD-008 - `/active-conf` cached (2.3.0); static catalog remains fallback. Detection is UNKNOWN outside a few DRC prefixes.
 - TD-009 - Token only in wp-admin options
 - TD-010 - No HPOS compatibility declaration
 - TD-011 - Classic checkout only (Blocks UNKNOWN)

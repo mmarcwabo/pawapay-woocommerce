@@ -27,4 +27,11 @@ interface WC_PawaPay_Client {
      * @return array<string, mixed>
      */
     public function check_deposit_status( string $deposit_id ): array;
+
+    /**
+     * Merchant API /active-conf. Empty or error payloads are allowed.
+     *
+     * @return array<string, mixed>
+     */
+    public function get_active_configuration(): array;
 }

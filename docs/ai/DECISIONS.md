@@ -153,3 +153,35 @@ Deactivate unschedules the hook. No schema change.
 
 **Date**
 2026-09-19
+
+### ADR-008 - Admin attempts list, not $theorder-only sync
+
+**Status:** Accepted.
+
+**Context**
+Shop managers could only sync the latest deposit via a global `$theorder` order action.
+
+**Decision**
+WooCommerce → PawaPay attempts plus an order metabox. Rows are sanitized (masked phone, no hash/token/failure message). Check status is `admin-post` + `manage_woocommerce` + nonce and GETs that attempt id.
+
+**Consequences**
+Plugin 2.3.0. The order action remains as a shortcut and no longer reads `$theorder`.
+
+**Date**
+2026-09-19
+
+### ADR-009 - Cached /active-conf with static fallback; never invent an MNO
+
+**Status:** Accepted.
+
+**Context**
+Checkout used a static catalog. DRC prefixes overlap and numbers are portable.
+
+**Decision**
+Cache `GET /active-conf` 30 minutes (5 minutes on error). Intersect with the static enabled list; if the intersection is empty, keep static. Auto-select an operator only for unique documented prefixes. Customer override always wins.
+
+**Consequences**
+Plugin 2.3.0. Detection accuracy outside those prefixes is UNKNOWN.
+
+**Date**
+2026-09-19

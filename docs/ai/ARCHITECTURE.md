@@ -1,7 +1,7 @@
 # Architecture
 
 ## Architecture status
-Observed 2026-09-19 on plugin **2.2.0**. Attempts, v1 client, initiate lock, GET-before-complete, waiting UX, and Action Scheduler reconciliation are live.
+Observed 2026-09-19 on plugin **2.3.0**. Attempts, verified completion, waiting UX, reconciliation, admin attempts list, and cached `/active-conf` are live.
 
 ## Current architecture
 Classic WooCommerce payment gateway. `WC_PawaPay_Gateway` owns checkout fields and settings. `WC_PawaPay_Payment_Service` initiates deposits. `WC_PawaPay_Callback_Processor` confirms callbacks with `GET /deposits/{id}`. `WC_PawaPay_Reconciler` GETs stale attempts via Action Scheduler. `WC_PawaPay_Deposit::apply()` completes only from trusted sources after amount checks. RFC 9421 ECDSA verify not claimed.
@@ -17,7 +17,8 @@ Checkout JS: operator cards + phone compose. Thank-you / order-pay JS: adaptive 
 | Woo adapter | `class-wc-pawapay-gateway.php` |
 | Initiation | `class-wc-pawapay-payment-service.php`, policy, lock |
 | HTTP | `WC_PawaPay_Client` + `class-wc-pawapay-api.php` (v1 `POST /deposits`) |
-| Catalog | `class-wc-pawapay-providers.php` (static) |
+| Catalog | `class-wc-pawapay-providers.php`, `class-wc-pawapay-catalog.php` (cached `/active-conf`) |
+| Admin | `class-wc-pawapay-admin.php`, `class-wc-pawapay-admin-attempt-view.php` |
 | FX | `class-wc-pawapay-currency.php` |
 | Sync | `class-wc-pawapay-deposit.php` |
 | Attempts | `class-wc-pawapay-attempt.php`, repository, migrator |
@@ -32,10 +33,10 @@ Checkout JS: operator cards + phone compose. Thank-you / order-pay JS: adaptive 
 Merchant Bearer token to PawaPay. Public callback is unauthenticated; status is confirmed with a token GET.
 
 ## Authorization
-Poll: order key + nonce. Admin sync: Woo shop manager order action.
+Poll: order key + nonce. Admin: `manage_woocommerce` attempts page + metabox + nonce GET.
 
 ## External integrations
-PawaPay Merchant API v1 (`/deposits`, `/deposits/{id}`, `/active-conf` unused at runtime). Optional Aelia/WOOCS filters.
+PawaPay Merchant API v1 (`/deposits`, `/deposits/{id}`, cached `/active-conf`). Optional Aelia/WOOCS filters.
 
 ## Async jobs / queues / schedulers
 Action Scheduler recurring `wc_pawapay_reconcile` (5 min). Poll + admin action remain.

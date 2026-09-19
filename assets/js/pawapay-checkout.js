@@ -4,6 +4,7 @@
     var LAST_MNO_KEY = 'pawapay_last_mno';
     var LAST_CURRENCY_KEY = 'pawapay_last_currency';
     var bound = false;
+    var userPickedMno = false;
 
     function config() {
         return window.wcPawapayCheckout || {};
@@ -149,6 +150,33 @@
             digits = digits.slice( 1 );
         }
         hidden.value = prefix && digits ? prefix + digits : digits;
+        hintOperator();
+    }
+
+    function hintOperator() {
+        if ( userPickedMno ) {
+            return;
+        }
+        var hidden = document.getElementById( 'pawapay_phone' );
+        var msisdn = hidden ? String( hidden.value || '' ) : '';
+        var hints = config().operatorHints || {};
+        var match = '';
+        var hits = 0;
+        Object.keys( hints ).forEach( function ( code ) {
+            ( hints[ code ] || [] ).forEach( function ( prefix ) {
+                if ( prefix && msisdn.indexOf( prefix ) === 0 ) {
+                    hits += 1;
+                    match = code;
+                }
+            } );
+        } );
+        if ( hits !== 1 || ! match ) {
+            return;
+        }
+        var card = document.querySelector( '.pawapay-mno-card[data-mno="' + match + '"]' );
+        if ( card && card.style.display !== 'none' ) {
+            selectCard( card, true );
+        }
     }
 
     function selectCard( card, keepCurrency ) {
@@ -244,6 +272,7 @@
             event.stopImmediatePropagation();
         }
 
+        userPickedMno = true;
         selectCard( card, false );
     }
 
@@ -265,6 +294,7 @@
             }
             event.preventDefault();
             event.stopPropagation();
+            userPickedMno = true;
             selectCard( card, false );
         }, true );
 

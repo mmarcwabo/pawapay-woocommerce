@@ -184,6 +184,10 @@ class WC_PawaPay_Reconcile_Fake implements WC_PawaPay_Client {
         $this->seen[] = $deposit_id;
         return [ 'status' => 'COMPLETED', 'depositId' => $deposit_id, '_http_code' => 200 ];
     }
+
+    public function get_active_configuration(): array {
+        return [ 'error' => 'not used' ];
+    }
 }
 
 $fake = new WC_PawaPay_Reconcile_Fake();

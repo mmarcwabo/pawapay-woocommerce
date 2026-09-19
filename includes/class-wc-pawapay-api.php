@@ -159,8 +159,12 @@ class WC_PawaPay_API implements WC_PawaPay_Client {
         return $this->request( 'GET', '/availability' );
     }
 
+    public static function active_conf_path(): string {
+        return '/active-conf';
+    }
+
     public function get_active_configuration(): array {
-        return $this->request( 'GET', '/active-conf' );
+        return $this->request( 'GET', self::active_conf_path() );
     }
 
     /**

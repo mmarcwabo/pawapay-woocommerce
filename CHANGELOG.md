@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.3.0
+
+- WooCommerce → **PawaPay attempts** lists every deposit (masked phone, no secrets). Order screens show the same table. **Check status** GETs that attempt’s deposit id.
+- Order actions no longer read the `$theorder` global.
+- Checkout caches `GET /active-conf` for 30 minutes and hides operators that are not boarded, falling back to the static catalog if the call fails or the intersection is empty.
+- Phone prefixes may pre-select Orange / Airtel / Vodacom on DRC sandbox-style numbers. Accuracy is UNKNOWN because of number portability. The customer can always pick another operator.
+
 ## 2.2.0
 
 - Background reconciliation: every 5 minutes Action Scheduler GETs stale `ACCEPTED` / `UNKNOWN` (and `PROCESSING` / `INITIATING`) attempts older than 3 minutes.

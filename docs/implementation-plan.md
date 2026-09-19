@@ -1,6 +1,6 @@
 # Implementation plan
 
-**2.0.0** shipped with Phase 1–4 (schema + initiation + verified completion). Phase 1 was **1.3.0**, Phase 3 **1.4.0**, Phase 5 **2.1.0**, Phase 6 **2.2.0**.
+**2.0.0** shipped with Phase 1–4 (schema + initiation + verified completion). Phase 1 was **1.3.0**, Phase 3 **1.4.0**, Phase 5 **2.1.0**, Phase 6 **2.2.0**, Phase 7–8 **2.3.0**.
 
 Rollback: deactivate 2.x and restore 1.2.1; 1.x meta still present. New table can remain unused.
 
@@ -86,11 +86,15 @@ No runtime change.
 
 ## Phase 7 — Admin panel
 
+**Status:** done 2026-09-19 (plugin **2.3.0**).
+
 **Goal:** Attempts list, masked phone, check status, no secrets.
 
 **Replace** global `$theorder` action-only UX.
 
 ## Phase 8 — `/active-conf` cache + provider detection
+
+**Status:** done 2026-09-19 (plugin **2.3.0**).
 
 **Goal:** Transient 15–60 min; static catalog as fallback. Detect MNO from MSISDN where prefixes allow; show friendly label; keep override.
 

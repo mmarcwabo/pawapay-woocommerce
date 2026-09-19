@@ -39,6 +39,41 @@ No structural change / ADR reference
 **Follow-up**
 ...
 
+### 2026-09-19 - Admin attempts + cached catalog (Phase 7–8)
+
+**Task**
+List payment attempts in wp-admin. Cache `/active-conf`. Hint operator only when the prefix is unique.
+
+**Components affected**
+Admin view/page, repository `find_recent`, gateway order actions, catalog policy, checkout JS, client `get_active_configuration`, `tests/admin-test.php`, `tests/catalog-test.php`.
+
+**Behavior changed**
+Managers see masked attempts and GET a chosen deposit id. Checkout filters operators by cached active-conf. DRC 24389/24397/24381 may pre-select an operator; the customer can override.
+
+**Database**
+None.
+
+**Dependencies**
+None.
+
+**Tests**
+`php tests/admin-test.php` and `php tests/catalog-test.php` plus existing suite.
+
+**Security review**
+PASS WITH CONDITIONS. Check status is POST + nonce + `manage_woocommerce`. Catalog cache is sandbox/live scoped. Residual: no admin GET rate limit.
+
+**Verifier**
+PASS WITH CONDITIONS. `$theorder` is only a fallback for older Woo. Extra MNOs stay after live-conf. Detection does not invent a provider.
+
+**Architecture**
+ADR-008, ADR-009. Version 2.3.0.
+
+**Known limitations**
+Operator auto-detect is UNKNOWN under number portability. No server poll rate limit yet.
+
+**Follow-up**
+Phase 9 hardening.
+
 ### 2026-09-19 - Action Scheduler reconciliation (Phase 6)
 
 **Task**
