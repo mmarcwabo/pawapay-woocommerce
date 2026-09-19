@@ -81,6 +81,15 @@ class WC_PawaPay_Poll_Policy {
         return $phase === self::PHASE_WAITING;
     }
 
+    public const MIN_LOOKUP_SECONDS = 2;
+
+    public static function allow_lookup( int $last_lookup_at, int $now ): bool {
+        if ( $last_lookup_at <= 0 ) {
+            return true;
+        }
+        return ( $now - $last_lookup_at ) >= self::MIN_LOOKUP_SECONDS;
+    }
+
     /**
      * @return array{maxAttempts: int, tiers: list<array{until: int, ms: int}>}
      */

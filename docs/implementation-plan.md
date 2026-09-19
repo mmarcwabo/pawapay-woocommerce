@@ -1,6 +1,6 @@
 # Implementation plan
 
-**2.0.0** shipped with Phase 1–4 (schema + initiation + verified completion). Phase 1 was **1.3.0**, Phase 3 **1.4.0**, Phase 5 **2.1.0**, Phase 6 **2.2.0**, Phase 7–8 **2.3.0**.
+**2.0.0** shipped with Phase 1–4. Phase 5 **2.1.0**, Phase 6 **2.2.0**, Phase 7–8 **2.3.0**, Phase 9–10 **2.4.0**.
 
 Rollback: deactivate 2.x and restore 1.2.1; 1.x meta still present. New table can remain unused.
 
@@ -102,9 +102,13 @@ No runtime change.
 
 ## Phase 9 — Hardening
 
+**Status:** done 2026-09-19 (plugin **2.4.0**).
+
 Token constant, poll rate limit, HPOS compatibility declaration (after verifying `wc_get_orders` meta queries), do not claim Blocks until tested.
 
 ## Phase 10 — Tests + README + 2.0.0
+
+**Status:** done 2026-09-19 (plugin **2.4.0**; 2.0.0 already shipped with Phase 4).
 
 PHPUnit or keep script tests plus new ones. Mermaid already in these docs. CHANGELOG migration notes.
 

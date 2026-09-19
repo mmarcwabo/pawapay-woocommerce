@@ -185,3 +185,19 @@ Plugin 2.3.0. Detection accuracy outside those prefixes is UNKNOWN.
 
 **Date**
 2026-09-19
+
+### ADR-010 - wp-config token, poll throttle, HPOS yes, Blocks no
+
+**Status:** Accepted.
+
+**Context**
+The API token lived only in options. Poll could GET PawaPay as fast as the browser fired. HPOS was used via Woo APIs but undeclared. Blocks was never tested.
+
+**Decision**
+`WC_PAWAPAY_API_TOKEN` wins over the settings field. Poll GETs at most once per order every 2 seconds. Declare `custom_order_tables` compatible. Do not declare Blocks compatible. New `_pawapay_phone` writes are masked.
+
+**Consequences**
+Plugin 2.4.0. Existing full MSISDN meta is not rewritten.
+
+**Date**
+2026-09-19

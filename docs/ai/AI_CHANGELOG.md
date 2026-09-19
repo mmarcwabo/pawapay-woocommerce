@@ -39,6 +39,41 @@ No structural change / ADR reference
 **Follow-up**
 ...
 
+### 2026-09-19 - Hardening + release notes (Phase 9–10)
+
+**Task**
+Token constant, poll GET throttle, HPOS declare, no Blocks claim, masked phone meta, script tests + changelog.
+
+**Components affected**
+Settings policy, poll policy, thank-you, gateway meta/API token, UUID generator, plugin bootstrap, `tests/harden-test.php`.
+
+**Behavior changed**
+`WC_PAWAPAY_API_TOKEN` wins. Poll skips PawaPay GET if the same order was looked up in the last 2 seconds. HPOS compatible. New `_pawapay_phone` is masked.
+
+**Database**
+None.
+
+**Dependencies**
+None.
+
+**Tests**
+`php tests/harden-test.php` plus existing suite.
+
+**Security review**
+PASS WITH CONDITIONS. Token stays server-side. Poll auth still precedes throttle. Throttle is best-effort (check-then-set). Do not hook `woocommerce_pawapay_api_token` to output the secret.
+
+**Verifier**
+PASS. Suite including `tests/harden-test.php` green. HPOS declared; Blocks not claimed.
+
+**Architecture**
+ADR-010. Version 2.4.0.
+
+**Known limitations**
+Blocks untested. RFC 9421 ECDSA not claimed. Old phone meta not rewritten.
+
+**Follow-up**
+GitHub release `v2.4.0`.
+
 ### 2026-09-19 - Admin attempts + cached catalog (Phase 7–8)
 
 **Task**

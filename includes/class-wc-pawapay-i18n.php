@@ -21,6 +21,8 @@ class WC_PawaPay_I18n {
             'Pay with your mobile money wallet.' => 'Payez avec votre portefeuille mobile money.',
             'Use PawaPay sandbox (testing)' => 'Utiliser le sandbox PawaPay (test)',
             'Found in PawaPay Dashboard → Developers. Sandbox and production tokens are different.' => 'Tableau de bord PawaPay → Developers. Les jetons sandbox et production sont différents.',
+            'Found in PawaPay Dashboard → Developers. Sandbox and production tokens are different. WC_PAWAPAY_API_TOKEN in wp-config overrides this field.' => 'Tableau de bord PawaPay → Developers. Les jetons sandbox et production sont différents. WC_PAWAPAY_API_TOKEN dans wp-config remplace ce champ.',
+            'Using WC_PAWAPAY_API_TOKEN from wp-config. This field is ignored.' => 'Utilisation de WC_PAWAPAY_API_TOKEN depuis wp-config. Ce champ est ignoré.',
             'Use the WooCommerce order currency when the selected operator supports it.' => 'Utiliser la devise de la commande WooCommerce si l’opérateur la prend en charge.',
             'Fallback currency if the order currency is not supported by the operator.' => 'Devise de secours si la devise de la commande n’est pas prise en charge.',
             'Countries where customers can pay. Leave empty to show every selected operator.' => 'Pays dans lesquels les clients peuvent payer. Vide = tous les opérateurs sélectionnés.',

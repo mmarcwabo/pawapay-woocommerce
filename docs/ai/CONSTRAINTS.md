@@ -13,7 +13,7 @@ Pretty permalinks required for `/pawapay-webhook/`. REST fallback exists. Firewa
 No extra paid PSP in this plugin. Debug must be off in steady production.
 
 ## Security constraints
-Do not enable signed outbound financial requests until the client signs. Do not localize the API token.
+Do not enable signed outbound financial requests until the client signs. Do not localize the API token. Prefer `WC_PAWAPAY_API_TOKEN` over the settings field.
 
 ## Legal / regulatory constraints
 UNKNOWN beyond PawaPay merchant contract and DRC operators boarded on the live account.

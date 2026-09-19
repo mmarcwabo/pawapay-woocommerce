@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.4.0
+
+- `WC_PAWAPAY_API_TOKEN` in wp-config overrides the gateway token field.
+- Thank-you poll is throttled server-side (one PawaPay GET per order every 2 seconds). Faster clicks still get the safe DTO.
+- WooCommerce High-Performance Order Storage is declared compatible. Classic checkout only; Blocks is not claimed.
+- New checkouts write a **masked** number to `_pawapay_phone`. Existing full numbers are left as-is. Deposit ids still use random UUID v4.
+
+**Upgrade:** 1.x and 2.x orders keep `_pawapay_deposit_id`. Optional: define `WC_PAWAPAY_API_TOKEN` and leave the settings field empty. Do not enable PawaPay “Sign all callbacks” unless the plugin setting is on.
+
 ## 2.3.0
 
 - WooCommerce → **PawaPay attempts** lists every deposit (masked phone, no secrets). Order screens show the same table. **Check status** GETs that attempt’s deposit id.

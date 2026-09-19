@@ -50,7 +50,7 @@ sequenceDiagram
 
 - `_pawapay_deposit_id` is still a latest-deposit pointer. A retry overwrites that meta key; earlier deposits remain in the attempts table.
 - Full RFC 9421 ECDSA callback signatures are not verified yet.
-- Poll is adaptive but not rate-limited (Phase 9).
+- Poll is adaptive and GET-throttled (2s/order). RFC 9421 ECDSA is not fully verified.
 - Reconciliation stops after 48 hours; admin “Check PawaPay status” remains for older rows.
 
 ## Target flow

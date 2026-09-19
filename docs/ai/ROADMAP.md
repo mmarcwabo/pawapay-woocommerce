@@ -1,13 +1,13 @@
 # Engineering Roadmap
 
 ## Immediate stabilization
-Phase 1–8 in `docs/implementation-plan.md`. Keep live v1 deposits working.
+Phases 0–10 in `docs/implementation-plan.md` shipped as plugin 2.4.0. Keep live v1 deposits working.
 
 ## Short-term improvements
-Phase 9: token constant, poll rate limit, HPOS declare.
+RFC 9421 ECDSA verify. Server-side initiate throttle if needed.
 
 ## Medium-term improvements
-Phase 10 broader Woo-bootstrap tests. Do not claim Blocks until tested.
+Woo-bootstrap / PHPUnit tests. Blocks checkout only after a real store test.
 
 ## Long-term opportunities
 PawaPay v2 client behind the same interface. Woo Blocks. Signed outbound requests.

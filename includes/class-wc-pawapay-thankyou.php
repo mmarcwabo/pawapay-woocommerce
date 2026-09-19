@@ -73,7 +73,7 @@ class WC_PawaPay_Thankyou {
             wp_send_json_error( [ 'message' => 'not_found' ], 404 );
         }
 
-        if ( $order->has_status( 'pending' ) ) {
+        if ( $order->has_status( 'pending' ) && self::claim_poll_lookup( $order_id ) ) {
             $gateways = WC()->payment_gateways()->payment_gateways();
             $gateway  = $gateways['pawapay'] ?? null;
             if ( $gateway instanceof WC_PawaPay_Gateway ) {
@@ -261,5 +261,18 @@ class WC_PawaPay_Thankyou {
         }
 
         return WC_PawaPay_Attempt::mask_msisdn( $phone_meta );
+    }
+
+    private static function claim_poll_lookup( int $order_id ): bool {
+        $key  = 'wc_pawapay_poll_rl_' . $order_id;
+        $last = function_exists( 'get_transient' ) ? (int) get_transient( $key ) : 0;
+        $now  = time();
+        if ( ! WC_PawaPay_Poll_Policy::allow_lookup( $last, $now ) ) {
+            return false;
+        }
+        if ( function_exists( 'set_transient' ) ) {
+            set_transient( $key, $now, 60 );
+        }
+        return true;
     }
 }

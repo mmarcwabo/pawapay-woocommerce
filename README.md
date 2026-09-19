@@ -9,7 +9,7 @@ Repo: [github.com/mmarcwabo/pawapay-woocommerce](https://github.com/mmarcwabo/pa
 1. Copy this folder to `wp-content/plugins/pawapay-woocommerce/` and activate the plugin.
 2. WooCommerce → Settings → Payments → PawaPay:
    - Enable the method
-   - Paste the **sandbox** or **production** API token (they are different)
+   - Paste the **sandbox** or **production** API token (they are different), or set `WC_PAWAPAY_API_TOKEN` in `wp-config.php`
    - Choose **supported countries**
    - Choose **supported operators** (PawaPay provider codes)
    - Optional: custom `LABEL|PROVIDER_CODE` lines
@@ -22,6 +22,8 @@ Repo: [github.com/mmarcwabo/pawapay-woocommerce](https://github.com/mmarcwabo/pa
 4. Settings → Permalinks → Save if the webhook 404s. WooCommerce → **PawaPay attempts** lists deposits. Orders also have a PawaPay attempts box and **Check PawaPay status**.
 
 The official repo is **public**. WordPress can check GitHub for updates without a token. Plugins → **Check for updates** should offer the latest `Version` on `main`.
+
+This plugin uses WooCommerce order APIs (`wc_get_order`, `wc_get_orders`) and declares **HPOS** compatible. Classic checkout only. WooCommerce Blocks checkout is untested and not claimed.
 
 A token is only needed if you point the checker at a private fork: `WC_PAWAPAY_GITHUB_TOKEN` in `wp-config.php`, or the GitHub update token field in the gateway settings.
 
@@ -70,6 +72,10 @@ DRC examples:
 Bump `Version:` and `WC_PAWAPAY_VERSION`, push `main`, tag `vX.Y.Z`. WordPress compares the header on `main` via Plugin Update Checker.
 
 ## Changelog
+
+### 2.4.0
+
+- `WC_PAWAPAY_API_TOKEN`, poll GET throttle, HPOS declared, masked `_pawapay_phone` on new checkouts. Blocks checkout is not claimed.
 
 ### 2.3.0
 
@@ -148,6 +154,7 @@ php tests/poll-test.php
 php tests/reconcile-test.php
 php tests/admin-test.php
 php tests/catalog-test.php
+php tests/harden-test.php
 ```
 
 Requires PHP 8.0+ and WooCommerce.

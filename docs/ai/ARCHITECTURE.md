@@ -1,7 +1,7 @@
 # Architecture
 
 ## Architecture status
-Observed 2026-09-19 on plugin **2.3.0**. Attempts, verified completion, waiting UX, reconciliation, admin attempts list, and cached `/active-conf` are live.
+Observed 2026-09-19 on plugin **2.4.0**. Phases 0–10 are implemented. Blocks checkout is not claimed.
 
 ## Current architecture
 Classic WooCommerce payment gateway. `WC_PawaPay_Gateway` owns checkout fields and settings. `WC_PawaPay_Payment_Service` initiates deposits. `WC_PawaPay_Callback_Processor` confirms callbacks with `GET /deposits/{id}`. `WC_PawaPay_Reconciler` GETs stale attempts via Action Scheduler. `WC_PawaPay_Deposit::apply()` completes only from trusted sources after amount checks. RFC 9421 ECDSA verify not claimed.
@@ -30,10 +30,10 @@ Checkout JS: operator cards + phone compose. Thank-you / order-pay JS: adaptive 
 `{prefix}pawapay_transactions` plus 1.x `_pawapay_*` meta. Last deposit still wins on meta. See `docs/architecture/payment-attempts.md`.
 
 ## Authentication
-Merchant Bearer token to PawaPay. Public callback is unauthenticated; status is confirmed with a token GET.
+Merchant Bearer token to PawaPay (`WC_PAWAPAY_API_TOKEN` or settings). Public callback is unauthenticated; status is confirmed with a token GET.
 
 ## Authorization
-Poll: order key + nonce. Admin: `manage_woocommerce` attempts page + metabox + nonce GET.
+Poll: order key + nonce + 2s GET throttle. Admin: `manage_woocommerce` attempts page + metabox + nonce POST.
 
 ## External integrations
 PawaPay Merchant API v1 (`/deposits`, `/deposits/{id}`, cached `/active-conf`). Optional Aelia/WOOCS filters.

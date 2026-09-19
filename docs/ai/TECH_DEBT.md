@@ -23,8 +23,8 @@
 - Status: Mitigated. Residual: no DB `SELECT … FOR UPDATE` around `payment_complete()`.
 
 ### TD-005 - Full MSISDN in order notes
-- Evidence: New initiation notes use `masked_msisdn`. `_pawapay_phone` meta still stores the full number for 1.x compatibility.
-- Status: Mitigated. Remaining: stop writing full MSISDN meta (Phase 9).
+- Evidence: New initiation notes use `masked_msisdn`. New `_pawapay_phone` writes are masked (2.4.0). Older rows may still hold a full number.
+- Status: Mitigated. New writes are masked (2.4.0). Old rows may still hold a full number.
 
 ## P2 - Medium
 
@@ -34,13 +34,13 @@
 
 ### TD-007 - Gateway god class
 - TD-008 - `/active-conf` cached (2.3.0); static catalog remains fallback. Detection is UNKNOWN outside a few DRC prefixes.
-- TD-009 - Token only in wp-admin options
-- TD-010 - No HPOS compatibility declaration
-- TD-011 - Classic checkout only (Blocks UNKNOWN)
-- TD-012 - Poll adaptive (2.1.0); still no server-side rate limit (Phase 9)
+- TD-009 - Token may come from `WC_PAWAPAY_API_TOKEN` (2.4.0); settings field remains as fallback
+- TD-010 - HPOS declared compatible (2.4.0)
+- TD-011 - Classic checkout only (Blocks UNKNOWN, not claimed)
+- TD-012 - Poll GET throttled to 2s/order (2.4.0)
 - TD-013 - Tests without Woo bootstrap
 
 ## P3 - Low
 
-### TD-014 - UUID via `mt_rand`
+### TD-014 - UUID via `random_bytes` / `wp_generate_uuid4` (2.4.0)
 ### TD-015 - French gettext map instead of `.po`

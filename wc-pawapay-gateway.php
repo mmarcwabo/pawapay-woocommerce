@@ -3,7 +3,7 @@
  * Plugin Name: PawaPay Mobile Money Gateway for WooCommerce
  * Plugin URI:  https://github.com/mmarcwabo/pawapay-woocommerce
  * Description: WooCommerce gateway for PawaPay mobile money deposits. Configure API keys, deposit callbacks, countries, and operators.
- * Version:     2.3.0
+ * Version:     2.4.0
  * Author:      Maungano
  * Author URI:  https://github.com/mmarcwabo/pawapay-woocommerce
  * License:     GPL v2 or later
@@ -17,14 +17,30 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WC_PAWAPAY_VERSION', '2.3.0' );
+define( 'WC_PAWAPAY_VERSION', '2.4.0' );
 define( 'WC_PAWAPAY_PLUGIN_FILE', __FILE__ );
 define( 'WC_PAWAPAY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WC_PAWAPAY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'WC_PAWAPAY_GITHUB_REPO', 'https://github.com/mmarcwabo/pawapay-woocommerce/' );
 
+add_action( 'before_woocommerce_init', 'wc_pawapay_declare_features' );
 add_action( 'plugins_loaded', 'wc_pawapay_load_storage', 10 );
 add_action( 'plugins_loaded', 'wc_pawapay_init', 11 );
+
+/**
+ * HPOS yes. Blocks checkout is untested — do not claim it.
+ */
+function wc_pawapay_declare_features(): void {
+    if ( ! class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+        return;
+    }
+
+    \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+        'custom_order_tables',
+        WC_PAWAPAY_PLUGIN_FILE,
+        true
+    );
+}
 
 function wc_pawapay_load_storage(): void {
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-attempt.php';
@@ -47,6 +63,7 @@ function wc_pawapay_init() {
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-catalog-policy.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-catalog.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-currency.php';
+    require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-settings-policy.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-client.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-api.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-initiation-policy.php';
@@ -79,6 +96,27 @@ function wc_pawapay_init() {
     add_action( 'init', [ 'WC_PawaPay_Webhook', 'register_endpoint' ] );
     add_action( 'rest_api_init', [ 'WC_PawaPay_Webhook', 'register_rest' ] );
     add_action( 'template_redirect', [ 'WC_PawaPay_Webhook', 'handle' ] );
+}
+
+/**
+ * Merchant API token. wp-config wins over the gateway setting.
+ */
+function wc_pawapay_api_token( ?WC_PawaPay_Gateway $gateway = null ): string {
+    $constant = ( defined( 'WC_PAWAPAY_API_TOKEN' ) && is_string( WC_PAWAPAY_API_TOKEN ) )
+        ? WC_PAWAPAY_API_TOKEN
+        : '';
+    $option   = '';
+    if ( $gateway instanceof WC_PawaPay_Gateway ) {
+        $option = (string) $gateway->get_option( 'api_token' );
+    } else {
+        $settings = get_option( 'woocommerce_pawapay_settings', [] );
+        if ( is_array( $settings ) ) {
+            $option = (string) ( $settings['api_token'] ?? '' );
+        }
+    }
+
+    $token = WC_PawaPay_Settings_Policy::api_token( $constant, $option );
+    return trim( (string) apply_filters( 'woocommerce_pawapay_api_token', $token ) );
 }
 
 /**

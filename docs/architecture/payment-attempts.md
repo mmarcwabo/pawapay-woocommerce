@@ -9,7 +9,7 @@ Old orders keep meta only until the first webhook/poll lookup backfills one row.
 | Meta | Meaning |
 |---|---|
 | `_pawapay_deposit_id` | Last UUID sent to PawaPay |
-| `_pawapay_phone` | Full MSISDN |
+| `_pawapay_phone` | Masked MSISDN on new checkouts (2.4.0). Older rows may still be full. |
 | `_pawapay_mno` | Provider code |
 | `_pawapay_currency` | Charge currency |
 | `_pawapay_amount` | Formatted charge amount |

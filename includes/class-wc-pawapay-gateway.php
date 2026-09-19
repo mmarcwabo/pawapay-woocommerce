@@ -103,7 +103,9 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
             'api_token'          => [
                 'title'       => __( 'API token', 'wc-pawapay' ),
                 'type'        => 'password',
-                'description' => __( 'Found in PawaPay Dashboard → Developers. Sandbox and production tokens are different.', 'wc-pawapay' ),
+                'description' => defined( 'WC_PAWAPAY_API_TOKEN' ) && is_string( WC_PAWAPAY_API_TOKEN ) && WC_PAWAPAY_API_TOKEN !== ''
+                    ? __( 'Using WC_PAWAPAY_API_TOKEN from wp-config. This field is ignored.', 'wc-pawapay' )
+                    : __( 'Found in PawaPay Dashboard → Developers. Sandbox and production tokens are different. WC_PAWAPAY_API_TOKEN in wp-config overrides this field.', 'wc-pawapay' ),
                 'desc_tip'    => true,
             ],
             'enabled_currencies' => [
@@ -446,7 +448,7 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
 
     private function write_legacy_meta( WC_Order $order, WC_PawaPay_Attempt $attempt, string $phone ): void {
         $order->update_meta_data( '_pawapay_deposit_id', $attempt->deposit_id() );
-        $order->update_meta_data( '_pawapay_phone', $phone );
+        $order->update_meta_data( '_pawapay_phone', WC_PawaPay_Settings_Policy::legacy_phone_meta( $phone ) );
         $order->update_meta_data( '_pawapay_mno', $attempt->provider() );
         $order->update_meta_data( '_pawapay_currency', $attempt->payment_currency() );
         $order->update_meta_data( '_pawapay_amount', $attempt->payment_amount() );
@@ -456,10 +458,6 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
         return new \WP_Error( 'pawapay_refund', __( 'Refunds must be processed from the PawaPay dashboard.', 'wc-pawapay' ) );
     }
 
-    /**
-     * @param array<string, string> $actions
-     * @return array<string, string>
-     */
     /**
      * @param array<string, string> $actions
      * @return array<string, string>
@@ -493,7 +491,7 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
 
     public function get_api(): WC_PawaPay_Client {
         return new WC_PawaPay_API(
-            (string) $this->get_option( 'api_token' ),
+            wc_pawapay_api_token( $this ),
             $this->get_option( 'sandbox' ) === 'yes',
             $this->get_option( 'debug' ) === 'yes'
         );
