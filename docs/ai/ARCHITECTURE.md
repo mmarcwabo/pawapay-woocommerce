@@ -1,7 +1,7 @@
 # Architecture
 
 ## Architecture status
-Observed 2026-09-19 on plugin **2.0.0**. Attempts, v1 client, initiate lock, and GET-before-complete are live.
+Observed 2026-09-19 on plugin **2.1.0**. Attempts, v1 client, initiate lock, GET-before-complete, and waiting UX are live.
 
 ## Current architecture
 Classic WooCommerce payment gateway. `WC_PawaPay_Gateway` owns checkout fields and settings. `WC_PawaPay_Payment_Service` initiates deposits. `WC_PawaPay_Callback_Processor` confirms callbacks with `GET /deposits/{id}`. `WC_PawaPay_Deposit::apply()` completes only from trusted sources after amount checks. No Action Scheduler. RFC 9421 ECDSA verify not claimed.
@@ -9,7 +9,7 @@ Classic WooCommerce payment gateway. `WC_PawaPay_Gateway` owns checkout fields a
 ## High-level component map
 `wc-pawapay-gateway.php` boots storage/migrator, providers, currency, API, deposit, gateway, webhook, thankyou, i18n, PUC.
 
-Checkout JS: operator cards + phone compose. Thank-you JS: fixed-interval poll.
+Checkout JS: operator cards + phone compose. Thank-you / order-pay JS: adaptive poll, customer-safe DTO.
 
 ## Modules / bounded areas
 | Area | Class / files |
@@ -22,7 +22,7 @@ Checkout JS: operator cards + phone compose. Thank-you JS: fixed-interval poll.
 | Sync | `class-wc-pawapay-deposit.php` |
 | Attempts | `class-wc-pawapay-attempt.php`, repository, migrator |
 | Ingress | `class-wc-pawapay-webhook.php` (rewrite + REST) |
-| UX | `class-wc-pawapay-thankyou.php`, `assets/*` |
+| UX | `class-wc-pawapay-thankyou.php`, `class-wc-pawapay-poll-policy.php`, `assets/*` |
 
 ## Data architecture
 `{prefix}pawapay_transactions` plus 1.x `_pawapay_*` meta. Last deposit still wins on meta. See `docs/architecture/payment-attempts.md`.

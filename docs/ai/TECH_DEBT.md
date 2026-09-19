@@ -34,7 +34,7 @@
 - TD-009 - Token only in wp-admin options
 - TD-010 - No HPOS compatibility declaration
 - TD-011 - Classic checkout only (Blocks UNKNOWN)
-- TD-012 - Poll every 3s, no backoff/rate limit
+- TD-012 - Poll adaptive (2.1.0); still no server-side rate limit (Phase 9)
 - TD-013 - Tests without Woo bootstrap
 
 ## P3 - Low

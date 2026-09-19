@@ -10,7 +10,7 @@
 | Authenticated `GET /deposits/{id}` with merchant token | Trusted transaction status. |
 | `wp-config` / env API token | Secret. Never localize to JS. |
 
-## Current controls (2.0.0)
+## Current controls (2.1.0)
 
 **Present**
 
@@ -19,7 +19,7 @@
 - Amount taken from the Woo order, not from the form.
 - Operator and currency checked against enabled lists.
 - MSISDN composed/validated server-side (`7–15` digits).
-- Poll requires `order_key` + nonce; guest poll is possible if the key leaks (same as Woo thank-you).
+- Poll requires `order_key` + nonce; guest poll is possible if the key leaks (same as Woo thank-you). The JSON is a customer-safe DTO (no deposit id, token, or full MSISDN).
 - Debug logs mask MSISDN (`WC_PawaPay_API::redact_for_log`).
 - Webhook does not log the raw body (only deposit id + status).
 
@@ -29,7 +29,7 @@
 - Full RFC 9421 ECDSA verification is not implemented. Optional digest + Signature-Date gate only.
 - `_pawapay_phone` meta still stores the full MSISDN.
 - API token lives in `woocommerce_pawapay_settings` only (no `WC_PAWAPAY_API_TOKEN` constant).
-- Poll has no rate limit.
+- Poll has adaptive backoff but no server-side rate limit.
 
 ## Target controls
 

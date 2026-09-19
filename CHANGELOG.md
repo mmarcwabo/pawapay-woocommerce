@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0
+
+- Thank-you and order-pay show a dedicated waiting card: confirm on the phone, masked number, amount. Polling backs off (3s → 15s) instead of every 3 seconds.
+- The poll JSON is a customer-safe DTO: phase, paid, reload, retry flag. No deposit id, token, or full MSISDN.
+- A failed attempt offers WooCommerce **order-pay** (“Try another number”). There is no second Pay button that bypasses Woo. An active attempt hides Place order on the pay page.
+
 ## 2.0.0
 
 - Callbacks are a hint. An order is paid only after `GET /deposits/{id}` (or another trusted status lookup) confirms `COMPLETED`.

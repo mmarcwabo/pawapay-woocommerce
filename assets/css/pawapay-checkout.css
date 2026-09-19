@@ -244,11 +244,64 @@
 }
 
 .pawapay-waiting {
-    margin-bottom: 1.5em;
-    padding: 16px 18px;
-    border: 1px solid #ececef;
-    border-radius: 14px;
+    --pawapay-purple: #6c3baa;
+    --pawapay-ink: #1c1c1e;
+    --pawapay-muted: #6b7280;
+    --pawapay-line: #ececef;
+    margin: 0 0 1.5em;
+    padding: 22px 20px 18px;
+    border: 1px solid var(--pawapay-line);
+    border-radius: 18px;
     background: #fff;
+    color: var(--pawapay-ink);
+}
+
+.pawapay-waiting-kicker {
+    margin: 0 0 6px;
+    color: var(--pawapay-muted);
+    font-size: 13px;
+}
+
+.pawapay-waiting-title {
+    margin: 0 0 10px;
+    font-size: 22px;
+    line-height: 1.25;
+}
+
+.pawapay-waiting-copy,
+.pawapay-waiting-status {
+    margin: 0 0 10px;
+    color: var(--pawapay-muted);
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+.pawapay-waiting-amount {
+    margin: 0 0 12px;
+    color: var(--pawapay-purple);
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.pawapay-waiting-actions {
+    margin: 14px 0 0;
+}
+
+.pawapay-waiting[data-phase="waiting"] .pawapay-waiting-status::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: var(--pawapay-purple);
+    vertical-align: middle;
+}
+
+body.pawapay-is-waiting form.checkout #payment,
+body.pawapay-is-waiting form#order_review #payment,
+body.pawapay-is-waiting #place_order {
+    display: none;
 }
 
 @media (max-width: 520px) {

@@ -109,3 +109,25 @@ Callback URL unchanged. Leave dashboard signing off unless the plugin setting is
 
 **Date**
 2026-09-19
+
+### ADR-006 - Waiting DTO and Woo pay-page retry
+
+**Status:** Accepted.
+
+**Context**
+Thank-you was a banner plus a fixed 3s poll that returned Woo status names. A failed attempt left the customer without a clear retry. Adding a custom Pay button would bypass Woo `process_payment`.
+
+**Decision**
+Poll returns a sanitized DTO (`phase`, `paid`, `reload`, `can_retry`, masked phone). Delays follow `WC_PawaPay_Poll_Policy`. Retry is Woo `get_checkout_payment_url()` only. An active attempt hides Place order on order-pay.
+
+**Alternatives considered**
+A plugin-owned “Pay again” POST — rejected; it would bypass checkout validation and the initiate lock.
+
+**Consequences**
+Plugin 2.1.0. Server-side poll rate limits stay Phase 9.
+
+**Migration / rollback impact**
+None for deposits. Older poll JS expecting `{status,paid,reload}` is replaced with this version’s script.
+
+**Date**
+2026-09-19

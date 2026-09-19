@@ -39,6 +39,41 @@ No structural change / ADR reference
 **Follow-up**
 ...
 
+### 2026-09-19 - Waiting UX + adaptive poll (Phase 5)
+
+**Task**
+Dedicated waiting copy; poll returns a customer-safe DTO; retry uses Woo order-pay.
+
+**Components affected**
+`WC_PawaPay_Poll_Policy`, thank-you / order-pay render, `pawapay-thankyou.js`, checkout CSS, `tests/poll-test.php`.
+
+**Behavior changed**
+Waiting card on thank-you and order-pay. Poll backs off 3s → 15s. JSON has no deposit id or full MSISDN. Failed attempts link to Woo pay; active attempts hide Place order.
+
+**Database**
+None.
+
+**Dependencies**
+None.
+
+**Tests**
+`php tests/poll-test.php` plus existing script tests.
+
+**Security review**
+PASS WITH CONDITIONS. Guest poll + no server rate limit remain Phase 9 residuals. Applied hash_equals, last-4 remask, order-pay CSS hide, same-origin pay URL check.
+
+**Verifier**
+PASS WITH CONDITIONS. Failed/cancelled pages no longer enqueue poll JS, so they cannot infinite-reload. Poll script only reloads after a poll response.
+
+**Architecture**
+ADR-006. Version 2.1.0.
+
+**Known limitations**
+Poll AJAX is still unrate-limited. No Action Scheduler if the customer leaves.
+
+**Follow-up**
+Phase 6 reconciliation.
+
 ### 2026-09-19 - Verified completion (Phase 4)
 
 **Task**

@@ -1,6 +1,6 @@
 # Payment flow
 
-Observed on plugin **2.0.0**. Live Maungano deposits completed on the 1.2.1 path; 1.3–2.0 add attempts, a v1 client, initiate lock, and GET-before-complete.
+Observed on plugin **2.1.0**. Live Maungano deposits completed on the 1.2.1 path; 1.3–2.1 add attempts, a v1 client, initiate lock, GET-before-complete, and a waiting screen.
 
 ## Current flow (as implemented)
 
@@ -42,14 +42,14 @@ sequenceDiagram
 - Payable **amount** comes from `$order->get_total()`, not from JavaScript.
 - Charge **currency** is chosen at checkout but converted on the server.
 - Browser reload of thank-you does not mark paid by itself; JS only polls, then the server calls PawaPay.
+- Waiting card is dedicated copy; poll JSON is a sanitized DTO.
 - `payment_complete()` is the only path that moves a pending order to paid.
 
 ## What is not yet the target
 
-- Redirect on `ACCEPTED` is the normal Woo thank-you page plus a banner, not a dedicated waiting screen.
 - `_pawapay_deposit_id` is still a latest-deposit pointer. A retry overwrites that meta key; earlier deposits remain in the attempts table.
 - Full RFC 9421 ECDSA callback signatures are not verified yet.
-- Dedicated waiting screen (Phase 5) is still the normal thank-you page.
+- Poll is adaptive but not rate-limited (Phase 9).
 - No Action Scheduler reconciliation if the customer leaves and the webhook never arrives (admin “Check PawaPay status” is manual only).
 
 ## Target flow

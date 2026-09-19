@@ -1,6 +1,6 @@
 # Implementation plan
 
-**2.0.0** shipped with Phase 1–4 (schema + initiation + verified completion). Phase 1 was **1.3.0**, Phase 3 **1.4.0**.
+**2.0.0** shipped with Phase 1–4 (schema + initiation + verified completion). Phase 1 was **1.3.0**, Phase 3 **1.4.0**, Phase 5 **2.1.0**.
 
 Rollback: deactivate 2.x and restore 1.2.1; 1.x meta still present. New table can remain unused.
 
@@ -68,11 +68,13 @@ No runtime change.
 
 ## Phase 5 — Waiting UX + adaptive poll
 
+**Status:** done 2026-09-19 (plugin **2.1.0**).
+
 **Goal:** Dedicated waiting copy; poll returns safe DTO only; server still GETs PawaPay.
 
 **Touch:** thank-you / order-pay templates, `pawapay-thankyou.js`.
 
-**Do not** add a second Pay button that bypasses Woo.
+**Do not** add a second Pay button that bypasses Woo. Retry uses Woo `order-pay`.
 
 ## Phase 6 — Action Scheduler reconciliation
 
