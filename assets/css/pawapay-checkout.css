@@ -1,3 +1,8 @@
+.woocommerce-checkout #payment .payment_methods li.payment_method_pawapay .payment_box {
+    padding: 0;
+    background: transparent;
+}
+
 #pawapay-fields.pawapay-panel {
     --pawapay-purple: #6c3baa;
     --pawapay-ink: #1c1c1e;

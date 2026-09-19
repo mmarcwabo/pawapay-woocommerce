@@ -26,13 +26,24 @@
                 }
                 if ( attempts < maxAttempts ) {
                     setTimeout( poll, 3000 );
+                    return;
                 }
+                stillWaiting();
             } )
             .catch( function () {
                 if ( attempts < maxAttempts ) {
                     setTimeout( poll, 5000 );
+                    return;
                 }
+                stillWaiting();
             } );
+    }
+
+    function stillWaiting() {
+        var box = document.getElementById( 'pawapay-waiting' );
+        if ( box && cfg.timeoutMessage ) {
+            box.textContent = cfg.timeoutMessage;
+        }
     }
 
     setTimeout( poll, 2500 );

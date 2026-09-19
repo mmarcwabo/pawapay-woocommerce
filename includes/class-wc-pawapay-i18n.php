@@ -49,8 +49,6 @@ class WC_PawaPay_I18n {
             'Please choose a payment currency supported by this operator.' => 'Veuillez choisir une devise de paiement prise en charge par cet opérateur.',
             'No exchange rate is available for that payment currency. Add a rate in PawaPay settings or install a currency switcher.' => 'Aucun taux de change n’est disponible pour cette devise. Ajoutez un taux dans les réglages PawaPay ou installez un sélecteur de devises.',
             'GitHub update token' => 'Jeton GitHub pour les mises à jour',
-            'Required while the GitHub repo is private. Fine-grained PAT: Contents Read on mmarcwabo/pawapay-woocommerce. wp-config WC_PAWAPAY_GITHUB_TOKEN overrides this field. A 401 means the token is missing or rejected.' => 'Nécessaire tant que le dépôt GitHub est privé. Jeton fine-grained : Contents Read sur mmarcwabo/pawapay-woocommerce. WC_PAWAPAY_GITHUB_TOKEN dans wp-config remplace ce champ. Un 401 signifie que le jeton manque ou est refusé.',
-            'PawaPay updates need a GitHub token because the plugin repo is private. Add WC_PAWAPAY_GITHUB_TOKEN to wp-config.php (above “That’s all, stop editing”) or paste a fine-grained token with Contents: Read on mmarcwabo/pawapay-woocommerce in WooCommerce → Settings → Payments → PawaPay.' => 'Les mises à jour PawaPay exigent un jeton GitHub car le dépôt est privé. Ajoutez WC_PAWAPAY_GITHUB_TOKEN dans wp-config.php (au-dessus de « That’s all, stop editing ») ou collez un jeton fine-grained Contents: Read sur mmarcwabo/pawapay-woocommerce dans WooCommerce → Réglages → Paiements → PawaPay.',
             'Payment to' => 'Paiement à',
             'For' => 'Pour',
             'Amount' => 'Montant',
@@ -61,6 +59,11 @@ class WC_PawaPay_I18n {
             'Your order' => 'Votre commande',
             'Order %s' => 'Commande %s',
             '%1$s × %2$s' => '%1$s × %2$s',
+            'Check PawaPay status' => 'Vérifier le statut PawaPay',
+            'Optional. Only needed for a private fork. Fine-grained PAT with Contents: Read. WC_PAWAPAY_GITHUB_TOKEN in wp-config overrides this field. Leave empty for the public official repo.' => 'Facultatif. Seulement pour un fork privé. Jeton fine-grained Contents: Read. WC_PAWAPAY_GITHUB_TOKEN dans wp-config remplace ce champ. Laissez vide pour le dépôt officiel public.',
+            'Copy one of these URLs into PawaPay Dashboard → Callback URLs → Deposits only:' => 'Copiez une de ces URL dans PawaPay Dashboard → Callback URLs → Deposits uniquement :',
+            'Use the REST URL if the pretty permalink 404s.' => 'Utilisez l’URL REST si le permilien renvoie 404.',
+            'Still waiting for PawaPay. Keep this page open or check the order later — confirmation can also arrive by webhook.' => 'Toujours en attente de PawaPay. Laissez cette page ouverte ou consultez la commande plus tard — la confirmation peut aussi arriver par webhook.',
         ];
 
         return $map[ $text ] ?? $translation;

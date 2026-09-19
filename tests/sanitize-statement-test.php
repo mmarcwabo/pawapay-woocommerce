@@ -30,4 +30,22 @@ foreach ( $cases as [ $input, $expected ] ) {
     echo "OK: $input => $got\n";
 }
 
+$masked = WC_PawaPay_API::mask_msisdn( '243893456789' );
+if ( $masked !== '********6789' ) {
+    fwrite( STDERR, "FAIL: mask_msisdn => '$masked'\n" );
+    $failed++;
+} else {
+    echo "OK: mask_msisdn\n";
+}
+
+$redacted = WC_PawaPay_API::redact_for_log( [
+    'payer' => [ 'address' => [ 'value' => '243893456789' ] ],
+] );
+if ( ( $redacted['payer']['address']['value'] ?? '' ) !== '********6789' ) {
+    fwrite( STDERR, "FAIL: redact_for_log\n" );
+    $failed++;
+} else {
+    echo "OK: redact_for_log\n";
+}
+
 exit( $failed === 0 ? 0 : 1 );

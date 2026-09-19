@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.1
+
+- Completion notes use `requestedAmount` / `depositedAmount` and record sandbox amount discrepancies.
+- Debug logs mask MSISDNs.
+- REST callback `/wp-json/pawapay/v1/deposits` if `/pawapay-webhook/` 404s.
+- Order action **Check PawaPay status** for pending deposits.
+- Thank-you poll explains when it stops; remove the private-repo GitHub token warning.
+
 ## 1.2.0
 
 - Checkout payment box follows PawaPay hosted UI: amount, prefixed phone, operator tiles, powered-by footer.

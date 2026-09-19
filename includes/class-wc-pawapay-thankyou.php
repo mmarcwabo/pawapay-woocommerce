@@ -41,7 +41,8 @@ class WC_PawaPay_Thankyou {
                 'ajaxUrl' => admin_url( 'admin-ajax.php' ),
                 'orderId' => $order->get_id(),
                 'orderKey' => $order->get_order_key(),
-                'nonce'   => wp_create_nonce( 'wc_pawapay_poll_' . $order->get_id() ),
+                'nonce'           => wp_create_nonce( 'wc_pawapay_poll_' . $order->get_id() ),
+                'timeoutMessage'  => __( 'Still waiting for PawaPay. Keep this page open or check the order later — confirmation can also arrive by webhook.', 'wc-pawapay' ),
             ]
         );
 

@@ -15,10 +15,11 @@ Repo: [github.com/mmarcwabo/pawapay-woocommerce](https://github.com/mmarcwabo/pa
    - Optional: custom `LABEL|PROVIDER_CODE` lines
    - Choose **charge currencies** (shop/switcher currencies plus PawaPay catalog)
    - If customers can pay in a currency the cart is not priced in, add **exchange rates** (`CDF=2800` = 2800 CDF per 1 shop-base unit). Skip this when Aelia Currency Switcher or WOOCS is converting.
-3. In the [PawaPay Dashboard](https://docs.pawapay.io/dashboard/other/system_conf/callback_urls) set **Deposits** callback to the URL shown in the gateway settings:
+3. In the [PawaPay Dashboard](https://docs.pawapay.io/dashboard/other/system_conf/callback_urls) set **Deposits** callback to one of the URLs shown in the gateway settings:
    `https://YOUR-SITE/pawapay-webhook/`
+   or `https://YOUR-SITE/wp-json/pawapay/v1/deposits` if the pretty permalink 404s.
    Leave Checkouts / Payouts / Refunds empty unless you add those flows later.
-4. Settings → Permalinks → Save if the webhook 404s.
+4. Settings → Permalinks → Save if the webhook 404s. Pending orders also have **Check PawaPay status** under order actions.
 
 The official repo is **public**. WordPress can check GitHub for updates without a token. Plugins → **Check for updates** should offer the latest `Version` on `main`.
 
@@ -31,7 +32,7 @@ A token is only needed if you point the checker at a private fork: `WC_PAWAPAY_G
 3. PawaPay should POST the final status to `/pawapay-webhook/`.
 4. If the callback is slow or blocked, the thank-you page polls `GET /deposits/{id}` and updates the order.
 
-The thank-you URL is not “paid”. **Payer / Annuler** means the deposit is still pending.
+The thank-you URL is not “paid” until PawaPay returns `COMPLETED` (webhook or poll). **En cours** in WooCommerce means the deposit is paid and the order is being fulfilled.
 
 ## Currency picker
 
@@ -63,6 +64,10 @@ DRC examples:
 Bump `Version:` and `WC_PAWAPAY_VERSION`, push `main`, tag `vX.Y.Z`. WordPress compares the header on `main` via Plugin Update Checker.
 
 ## Changelog
+
+### 1.2.1
+
+- REST deposit callback, order-action status sync, redacted debug logs, and no private-repo update notice.
 
 ### 1.2.0
 

@@ -107,7 +107,7 @@ class WC_PawaPay_API {
 
         if ( $this->debug ) {
             wc_get_logger()->debug(
-                '[PawaPay] → ' . $method . ' ' . $url . ' | Payload: ' . wp_json_encode( $body ),
+                '[PawaPay] → ' . $method . ' ' . $url . ' | Payload: ' . wp_json_encode( self::redact_for_log( $body ) ),
                 [ 'source' => 'wc-pawapay' ]
             );
         }
@@ -124,8 +124,9 @@ class WC_PawaPay_API {
         $data = json_decode( $raw, true ) ?? [];
 
         if ( $this->debug ) {
+            $logged = is_array( $data ) ? wp_json_encode( self::redact_for_log( $data ) ) : $raw;
             wc_get_logger()->debug(
-                '[PawaPay] ← HTTP ' . $code . ' | Body: ' . $raw,
+                '[PawaPay] ← HTTP ' . $code . ' | Body: ' . $logged,
                 [ 'source' => 'wc-pawapay' ]
             );
         }
@@ -136,6 +137,31 @@ class WC_PawaPay_API {
 
     private function log( string $message ): void {
         wc_get_logger()->error( '[PawaPay] ' . $message, [ 'source' => 'wc-pawapay' ] );
+    }
+
+    /**
+     * @param array<string, mixed>|list<mixed> $payload
+     * @return array<string, mixed>|list<mixed>
+     */
+    public static function redact_for_log( array $payload ): array {
+        if ( isset( $payload[0] ) && is_array( $payload[0] ) ) {
+            $payload[0] = self::redact_for_log( $payload[0] );
+            return $payload;
+        }
+
+        if ( isset( $payload['payer']['address']['value'] ) ) {
+            $payload['payer']['address']['value'] = self::mask_msisdn( (string) $payload['payer']['address']['value'] );
+        }
+
+        return $payload;
+    }
+
+    public static function mask_msisdn( string $msisdn ): string {
+        $digits = preg_replace( '/\D+/', '', $msisdn ) ?? '';
+        if ( strlen( $digits ) <= 4 ) {
+            return '****';
+        }
+        return str_repeat( '*', strlen( $digits ) - 4 ) . substr( $digits, -4 );
     }
 
     public static function generate_uuid(): string {

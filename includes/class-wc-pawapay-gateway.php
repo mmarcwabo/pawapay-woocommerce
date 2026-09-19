@@ -21,6 +21,8 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
 
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_checkout_assets' ] );
+        add_filter( 'woocommerce_order_actions', [ $this, 'order_actions' ] );
+        add_action( 'woocommerce_order_action_pawapay_sync', [ $this, 'sync_order_from_action' ] );
     }
 
     public function enqueue_checkout_assets(): void {
@@ -148,13 +150,13 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
             'github_token'       => [
                 'title'       => __( 'GitHub update token', 'wc-pawapay' ),
                 'type'        => 'password',
-                'description' => __( 'Required while the GitHub repo is private. Fine-grained PAT: Contents Read on mmarcwabo/pawapay-woocommerce. wp-config WC_PAWAPAY_GITHUB_TOKEN overrides this field. A 401 means the token is missing or rejected.', 'wc-pawapay' ),
+                'description' => __( 'Optional. Only needed for a private fork. Fine-grained PAT with Contents: Read. WC_PAWAPAY_GITHUB_TOKEN in wp-config overrides this field. Leave empty for the public official repo.', 'wc-pawapay' ),
                 'desc_tip'    => true,
             ],
             'webhook_url'        => [
                 'title'       => __( 'Deposit callback URL', 'wc-pawapay' ),
                 'type'        => 'title',
-                'description' => '<strong>' . esc_html__( 'Copy this URL into PawaPay Dashboard → Callback URLs → Deposits only:', 'wc-pawapay' ) . '</strong><br><code>' . esc_html( home_url( '/pawapay-webhook/' ) ) . '</code>',
+                'description' => '<strong>' . esc_html__( 'Copy one of these URLs into PawaPay Dashboard → Callback URLs → Deposits only:', 'wc-pawapay' ) . '</strong><br><code>' . esc_html( home_url( '/pawapay-webhook/' ) ) . '</code><br><code>' . esc_html( rest_url( 'pawapay/v1/deposits' ) ) . '</code><br>' . esc_html__( 'Use the REST URL if the pretty permalink 404s.', 'wc-pawapay' ),
             ],
         ];
     }
@@ -431,6 +433,23 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
 
     public function process_refund( $order_id, $amount = null, $reason = '' ): bool|\WP_Error {
         return new \WP_Error( 'pawapay_refund', __( 'Refunds must be processed from the PawaPay dashboard.', 'wc-pawapay' ) );
+    }
+
+    /**
+     * @param array<string, string> $actions
+     * @return array<string, string>
+     */
+    public function order_actions( array $actions ): array {
+        global $theorder;
+        $order = $theorder instanceof WC_Order ? $theorder : null;
+        if ( $order && $order->get_payment_method() === $this->id && $order->get_meta( '_pawapay_deposit_id' ) ) {
+            $actions['pawapay_sync'] = __( 'Check PawaPay status', 'wc-pawapay' );
+        }
+        return $actions;
+    }
+
+    public function sync_order_from_action( WC_Order $order ): void {
+        WC_PawaPay_Deposit::sync_from_api( $order, $this->get_api() );
     }
 
     public function get_api(): WC_PawaPay_API {

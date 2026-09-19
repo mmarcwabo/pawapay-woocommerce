@@ -42,6 +42,16 @@ class WC_PawaPay_Deposit {
         return $payload;
     }
 
+    public static function extract_amount( array $payload, string $prefer = 'requestedAmount' ): string {
+        $data = self::extract_deposit_payload( $payload );
+        foreach ( [ $prefer, 'requestedAmount', 'depositedAmount', 'amount' ] as $key ) {
+            if ( isset( $data[ $key ] ) && $data[ $key ] !== '' && $data[ $key ] !== null ) {
+                return trim( (string) $data[ $key ] );
+            }
+        }
+        return '';
+    }
+
     /**
      * Apply a final or intermediate PawaPay status to a Woo order.
      *
@@ -61,14 +71,26 @@ class WC_PawaPay_Deposit {
 
         switch ( $status ) {
             case 'COMPLETED':
+                $requested = self::extract_amount( $data, 'requestedAmount' );
+                $deposited = self::extract_amount( $data, 'depositedAmount' );
+                $currency  = sanitize_text_field( $data['currency'] ?? '' );
+                $order->update_meta_data( '_pawapay_requested_amount', $requested );
+                $order->update_meta_data( '_pawapay_deposited_amount', $deposited );
+                if ( $requested !== '' && $deposited !== '' && $requested !== $deposited ) {
+                    $order->update_meta_data( '_pawapay_amount_discrepancy', 'yes' );
+                }
                 $order->payment_complete( $deposit_id );
+                $amount_note = $requested !== '' ? $requested : $deposited;
+                if ( $requested !== '' && $deposited !== '' && $requested !== $deposited ) {
+                    $amount_note = sprintf( '%s (deposited %s)', $requested, $deposited );
+                }
                 $order->add_order_note( sprintf(
                     'PawaPay payment COMPLETED (%s). Deposit ID: %s | MNO: %s | Amount: %s %s',
                     $source,
                     $deposit_id,
                     sanitize_text_field( $data['correspondent'] ?? $order->get_meta( '_pawapay_mno' ) ?: 'N/A' ),
-                    sanitize_text_field( $data['amount'] ?? '' ),
-                    sanitize_text_field( $data['currency'] ?? '' )
+                    $amount_note,
+                    $currency
                 ) );
                 $logger->info( '[PawaPay] Order #' . $order->get_id() . ' COMPLETED via ' . $source, [ 'source' => 'wc-pawapay' ] );
                 break;
