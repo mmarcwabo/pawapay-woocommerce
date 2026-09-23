@@ -3,7 +3,7 @@
  * Plugin Name: PawaPay Mobile Money Gateway for WooCommerce
  * Plugin URI:  https://github.com/mmarcwabo/pawapay-woocommerce
  * Description: WooCommerce gateway for PawaPay mobile money deposits. Configure API keys, deposit callbacks, countries, and operators.
- * Version:     2.4.0
+ * Version:     2.4.1
  * Author:      Maungano
  * Author URI:  https://github.com/mmarcwabo/pawapay-woocommerce
  * License:     GPL v2 or later
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WC_PAWAPAY_VERSION', '2.4.0' );
+define( 'WC_PAWAPAY_VERSION', '2.4.1' );
 define( 'WC_PAWAPAY_PLUGIN_FILE', __FILE__ );
 define( 'WC_PAWAPAY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WC_PAWAPAY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -76,6 +76,7 @@ function wc_pawapay_init() {
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-poll-policy.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-reconciliation-policy.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-reconciler.php';
+    require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-checkout-chrome.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-gateway.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-webhook.php';
     require_once WC_PAWAPAY_PLUGIN_DIR . 'includes/class-wc-pawapay-thankyou.php';

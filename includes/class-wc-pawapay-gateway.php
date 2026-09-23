@@ -21,8 +21,17 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
 
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_checkout_assets' ] );
+        add_filter( 'body_class', [ $this, 'in_app_body_class' ] );
         add_filter( 'woocommerce_order_actions', [ $this, 'order_actions' ], 10, 2 );
         add_action( 'woocommerce_order_action_pawapay_sync', [ $this, 'sync_order_from_action' ] );
+    }
+
+    public function in_app_body_class( array $classes ): array {
+        if ( ! function_exists( 'is_checkout' ) || ! is_checkout() ) {
+            return $classes;
+        }
+        $app = isset( $_GET['app'] ) ? sanitize_text_field( wp_unslash( (string) $_GET['app'] ) ) : '';
+        return WC_PawaPay_Checkout_Chrome::body_class( $classes, $app, '' );
     }
 
     public function enqueue_checkout_assets(): void {
@@ -294,7 +303,7 @@ class WC_PawaPay_Gateway extends WC_Payment_Gateway {
         $flag      = WC_PawaPay_Providers::flag_emoji( $country );
 
         echo '<div class="pawapay-field">';
-        echo '<label for="pawapay_phone_local">' . esc_html__( 'Phone number', 'wc-pawapay' ) . ' <span class="required">*</span></label>';
+        echo '<label for="pawapay_phone_local">' . esc_html__( 'Mobile money number', 'wc-pawapay' ) . ' <span class="required">*</span></label>';
         echo '<div class="pawapay-phone">';
         echo '<span class="pawapay-prefix" id="pawapay-prefix" data-prefix="' . esc_attr( $prefix ) . '">';
         echo '<span class="pawapay-flag" id="pawapay-flag">' . esc_html( $flag ) . '</span>';

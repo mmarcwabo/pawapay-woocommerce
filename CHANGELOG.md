@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.1
+
+- In-app checkout (`?app=1` on checkout / order-pay) adds body class `pawapay-in-app` and hides theme header/footer/nav. Browser checkout is unchanged.
+- Phone field label is “Mobile money number”.
+
 ## 2.4.0
 
 - `WC_PAWAPAY_API_TOKEN` in wp-config overrides the gateway token field.

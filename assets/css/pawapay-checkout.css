@@ -304,6 +304,40 @@ body.pawapay-is-waiting #place_order {
     display: none;
 }
 
+body.pawapay-in-app.woocommerce-checkout header,
+body.pawapay-in-app.woocommerce-checkout footer,
+body.pawapay-in-app.woocommerce-checkout nav,
+body.pawapay-in-app.woocommerce-order-pay header,
+body.pawapay-in-app.woocommerce-order-pay footer,
+body.pawapay-in-app.woocommerce-order-pay nav,
+body.pawapay-in-app.woocommerce-checkout .elementor-location-header,
+body.pawapay-in-app.woocommerce-checkout .elementor-location-footer,
+body.pawapay-in-app.woocommerce-order-pay .elementor-location-header,
+body.pawapay-in-app.woocommerce-order-pay .elementor-location-footer,
+body.pawapay-in-app.woocommerce-checkout .gtranslate_wrapper,
+body.pawapay-in-app.woocommerce-order-pay .gtranslate_wrapper,
+body.pawapay-in-app.woocommerce-checkout .woocommerce-store-notice,
+body.pawapay-in-app.woocommerce-order-pay .woocommerce-store-notice,
+body.pawapay-in-app.woocommerce-checkout #masthead,
+body.pawapay-in-app.woocommerce-order-pay #masthead,
+body.pawapay-in-app.woocommerce-checkout #colophon,
+body.pawapay-in-app.woocommerce-order-pay #colophon,
+body.pawapay-in-app.woocommerce-checkout #wpadminbar,
+body.pawapay-in-app.woocommerce-order-pay #wpadminbar {
+    display: none !important;
+}
+
+body.pawapay-in-app.woocommerce-checkout,
+body.pawapay-in-app.woocommerce-order-pay {
+    margin: 0;
+    padding: 0;
+}
+
+body.pawapay-in-app #place_order {
+    min-height: 48px;
+    font-size: 16px;
+}
+
 @media (max-width: 520px) {
     .pawapay-panel-head {
         grid-template-columns: 1fr;

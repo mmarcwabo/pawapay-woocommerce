@@ -39,6 +39,41 @@ No structural change / ADR reference
 **Follow-up**
 ...
 
+### 2026-09-23 - In-app checkout chrome (2.4.1)
+
+**Task**
+Hide theme chrome on Flutter WebView checkout without changing the deposit path.
+
+**Components affected**
+`WC_PawaPay_Checkout_Chrome`, gateway `body_class`, `pawapay-checkout.css`, phone field label.
+
+**Behavior changed**
+Checkout / order-pay with `app=1` adds `pawapay-in-app`. Header/footer/nav hidden. Browser checkout unchanged. Tokens stay on WordPress. Cookie query is not a chrome switch.
+
+**Database**
+None
+
+**Dependencies**
+None
+
+**Tests**
+`php tests/checkout-chrome-test.php`
+
+**Security review**
+Cookie value is not read; presence only.
+
+**Verifier**
+Not run
+
+**Architecture**
+No money-path change. Aligns with Maungano ADR-019.
+
+**Known limitations**
+Theme selectors are Hello Elementor / common Woo IDs. A custom theme may still show chrome.
+
+**Follow-up**
+Deploy 2.4.1 to maungano.com.
+
 ### 2026-09-19 - Hardening + release notes (Phase 9–10)
 
 **Task**

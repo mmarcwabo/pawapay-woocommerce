@@ -155,6 +155,7 @@ php tests/reconcile-test.php
 php tests/admin-test.php
 php tests/catalog-test.php
 php tests/harden-test.php
+php tests/checkout-chrome-test.php
 ```
 
 Requires PHP 8.0+ and WooCommerce.
