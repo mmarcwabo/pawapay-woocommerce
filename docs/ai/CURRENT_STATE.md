@@ -3,7 +3,7 @@
 > Observed, not desired. Date: 2026-09-19.
 
 ## Baseline date
-2026-09-23. Plugin **2.4.1** (in-app checkout chrome). Prior release target **v2.4.0** (covers 1.3.0–2.4.0 since last published tag **v1.2.1**).
+2026-09-23. Plugin **2.4.2** (in-app poll REST). Released tag **v2.4.1**. Prior **v2.4.0**.
 
 ## Repository health
 Single `main`. Composer: PHP 8.0+, Plugin Update Checker 5.x. No CI in this repo.

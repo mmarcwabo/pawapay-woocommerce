@@ -11,6 +11,35 @@ class WC_PawaPay_Thankyou {
         add_action( 'wp_ajax_nopriv_wc_pawapay_poll', [ self::class, 'ajax_poll' ] );
     }
 
+    public static function register_rest(): void {
+        register_rest_route(
+            'pawapay/v1',
+            '/poll',
+            [
+                'methods'             => 'POST',
+                'callback'            => [ self::class, 'rest_poll' ],
+                'permission_callback' => '__return_true',
+            ]
+        );
+    }
+
+    /**
+     * In-app wait screen. Auth is Woo order key (same as thank-you ajax).
+     *
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function rest_poll( WP_REST_Request $request ) {
+        $dto = self::poll_for_customer(
+            absint( $request->get_param( 'order_id' ) ),
+            sanitize_text_field( (string) $request->get_param( 'order_key' ) )
+        );
+        if ( is_wp_error( $dto ) ) {
+            return $dto;
+        }
+
+        return rest_ensure_response( $dto );
+    }
+
     /**
      * @param list<string> $classes
      * @return list<string>
@@ -68,9 +97,29 @@ class WC_PawaPay_Thankyou {
             wp_send_json_error( [ 'message' => 'invalid' ], 403 );
         }
 
+        $dto = self::poll_for_customer( $order_id, $order_key );
+        if ( is_wp_error( $dto ) ) {
+            $data   = $dto->get_error_data();
+            $status = ( is_array( $data ) && isset( $data['status'] ) ) ? (int) $data['status'] : 404;
+            wp_send_json_error( [ 'message' => $dto->get_error_code() ], $status );
+        }
+
+        wp_send_json_success( $dto );
+    }
+
+    /**
+     * Server-side PawaPay GET, then a customer-safe DTO. Never returns tokens.
+     *
+     * @return array<string, mixed>|WP_Error
+     */
+    public static function poll_for_customer( int $order_id, string $order_key ) {
+        if ( ! WC_PawaPay_Poll_Policy::rest_args_valid( $order_id, $order_key ) ) {
+            return new WP_Error( 'pawapay_poll_invalid', 'invalid', [ 'status' => 400 ] );
+        }
+
         $order = wc_get_order( $order_id );
         if ( ! $order || ! hash_equals( (string) $order->get_order_key(), $order_key ) || $order->get_payment_method() !== 'pawapay' ) {
-            wp_send_json_error( [ 'message' => 'not_found' ], 404 );
+            return new WP_Error( 'pawapay_poll_not_found', 'not_found', [ 'status' => 404 ] );
         }
 
         if ( $order->has_status( 'pending' ) && self::claim_poll_lookup( $order_id ) ) {
@@ -87,7 +136,7 @@ class WC_PawaPay_Thankyou {
             }
         }
 
-        wp_send_json_success( self::dto_for_order( $order ) );
+        return self::dto_for_order( $order );
     }
 
     /**

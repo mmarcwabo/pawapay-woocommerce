@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.2
+
+- `POST /wp-json/pawapay/v1/poll` with Woo `order_id` + `order_key` runs the same server-side deposit GET as thank-you ajax. The Flutter wait screen can show paid / retry after PIN confirm, refuse, or cancel. Tokens stay on WordPress.
+
 ## 2.4.1
 
 - In-app checkout (`?app=1` on checkout / order-pay) adds body class `pawapay-in-app` and hides theme header/footer/nav. Browser checkout is unchanged.

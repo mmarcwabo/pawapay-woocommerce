@@ -3,7 +3,7 @@
  * Plugin Name: PawaPay Mobile Money Gateway for WooCommerce
  * Plugin URI:  https://github.com/mmarcwabo/pawapay-woocommerce
  * Description: WooCommerce gateway for PawaPay mobile money deposits. Configure API keys, deposit callbacks, countries, and operators.
- * Version:     2.4.1
+ * Version:     2.4.2
  * Author:      Maungano
  * Author URI:  https://github.com/mmarcwabo/pawapay-woocommerce
  * License:     GPL v2 or later
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WC_PAWAPAY_VERSION', '2.4.1' );
+define( 'WC_PAWAPAY_VERSION', '2.4.2' );
 define( 'WC_PAWAPAY_PLUGIN_FILE', __FILE__ );
 define( 'WC_PAWAPAY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WC_PAWAPAY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -96,6 +96,7 @@ function wc_pawapay_init() {
 
     add_action( 'init', [ 'WC_PawaPay_Webhook', 'register_endpoint' ] );
     add_action( 'rest_api_init', [ 'WC_PawaPay_Webhook', 'register_rest' ] );
+    add_action( 'rest_api_init', [ 'WC_PawaPay_Thankyou', 'register_rest' ] );
     add_action( 'template_redirect', [ 'WC_PawaPay_Webhook', 'handle' ] );
 }
 

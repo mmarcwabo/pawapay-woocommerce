@@ -39,6 +39,23 @@ No structural change / ADR reference
 **Follow-up**
 ...
 
+### 2026-09-23 - In-app poll REST (2.4.2)
+
+**Task**
+Let the Flutter wait screen trigger the same PawaPay GET as thank-you ajax after the WebView is popped.
+
+**Components affected**
+`WC_PawaPay_Thankyou::register_rest`, `poll_for_customer`, `POST /pawapay/v1/poll`.
+
+**Behavior changed**
+`order_id` + `order_key` sync the deposit on the server and return the customer-safe DTO (`phase`, `can_retry`, no token / deposit id).
+
+**Tests**
+`php tests/poll-test.php`
+
+**Follow-up**
+GitHub release `v2.4.2` and update WordPress.
+
 ### 2026-09-23 - In-app checkout chrome (2.4.1)
 
 **Task**

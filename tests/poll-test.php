@@ -122,6 +122,10 @@ pawapay_assert( WC_PawaPay_Poll_Policy::error_delay_ms( 25 ) <= 20000, 'error de
 pawapay_assert( WC_PawaPay_Poll_Policy::should_continue( 1 ), 'continues early' );
 pawapay_assert( ! WC_PawaPay_Poll_Policy::should_continue( 28 ), 'stops at max' );
 pawapay_assert( WC_PawaPay_Poll_Policy::schedule()['maxAttempts'] === 28, 'schedule max' );
+pawapay_assert( WC_PawaPay_Poll_Policy::rest_args_valid( 7888, 'wc_order_abc' ), 'in-app poll args ok' );
+pawapay_assert( ! WC_PawaPay_Poll_Policy::rest_args_valid( 0, 'wc_order_abc' ), 'zero order rejected' );
+pawapay_assert( ! WC_PawaPay_Poll_Policy::rest_args_valid( 7888, '' ), 'empty key rejected' );
+
 pawapay_assert( WC_PawaPay_Poll_Policy::should_poll( WC_PawaPay_Poll_Policy::PHASE_WAITING ), 'waiting polls' );
 pawapay_assert( ! WC_PawaPay_Poll_Policy::should_poll( WC_PawaPay_Poll_Policy::PHASE_FAILED ), 'failed does not poll' );
 pawapay_assert( ! WC_PawaPay_Poll_Policy::should_poll( WC_PawaPay_Poll_Policy::PHASE_RETRY ), 'retry does not poll' );

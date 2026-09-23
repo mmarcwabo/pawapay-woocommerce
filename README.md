@@ -73,6 +73,14 @@ Bump `Version:` and `WC_PAWAPAY_VERSION`, push `main`, tag `vX.Y.Z`. WordPress c
 
 ## Changelog
 
+### 2.4.2
+
+- `POST /wp-json/pawapay/v1/poll` for the in-app wait screen (order id + key). Same server GET as thank-you ajax.
+
+### 2.4.1
+
+- In-app checkout (`?app=1`) hides theme chrome.
+
 ### 2.4.0
 
 - `WC_PAWAPAY_API_TOKEN`, poll GET throttle, HPOS declared, masked `_pawapay_phone` on new checkouts. Blocks checkout is not claimed.

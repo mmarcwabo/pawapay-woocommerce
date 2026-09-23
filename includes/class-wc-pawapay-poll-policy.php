@@ -83,6 +83,10 @@ class WC_PawaPay_Poll_Policy {
 
     public const MIN_LOOKUP_SECONDS = 2;
 
+    public static function rest_args_valid( int $order_id, string $order_key ): bool {
+        return $order_id > 0 && $order_key !== '';
+    }
+
     public static function allow_lookup( int $last_lookup_at, int $now ): bool {
         if ( $last_lookup_at <= 0 ) {
             return true;
